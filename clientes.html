@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes - Admin Piscina</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom, #004e92 0%, #000428 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        /* --- NAV ADMIN --- */
+        .admin-nav {
+            background: #111827;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            background: #374151; color: #f3f4f6; border: none;
+            padding: 10px 15px; border-radius: 8px; font-weight: bold;
+            font-size: 0.9rem; cursor: pointer; text-decoration: none; 
+            transition: all 0.3s; font-family: inherit; 
+        }
+        .nav-btn:hover { background: #4b5563; }
+        .nav-btn.active { background: #007bff; color: #fff; } /* Azul Ativo */
+        .nav-btn.logout { background: #dc2626; color: #fff; margin-left: auto; }
+        .nav-btn.logout:hover { background: #ef4444; }
+        /* --- FIM DA NAV --- */
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .manager-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .btn-add {
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 12px 18px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        #clientes-lista {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .item-card {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #007bff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .item-card .nome {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        .item-card .info {
+            font-size: 1rem;
+            color: #9ca3af;
+            margin: 5px 0;
+            /* ⭐ NOVO: Para o email não quebrar a linha */
+            word-break: break-all;
+        }
+        .item-card .mensalidade {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #10b981; /* Verde para dinheiro */
+            margin-top: 10px;
+        }
+        .btn-edit {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+        }
+        #loading-msg {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #007bff;
+            padding: 40px;
+        }
+
+        /* --- ESTILOS DO MODAL --- */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; overflow-y: auto; }
+        .modal.active { display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: linear-gradient(145deg, #2d3748, #1a202c); border-radius: 20px; max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto; border: 2px solid #007bff; }
+        .modal-header { background: #000; padding: 20px; border-bottom: 2px solid #007bff; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+        .modal-title { font-size: 1.5rem; font-weight: bold; color: #007bff; }
+        .close-btn { background: #dc2626; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
+        .modal-body { padding: 25px; }
+        .section-title { font-size: 1.2rem; color: #007bff; font-weight: bold; margin: 15px 0 10px 0; border-bottom: 1px solid #374151; padding-bottom: 5px; }
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        @media (min-width: 600px) {
+            .form-grid { grid-template-columns: 1fr 1fr; }
+        }
+        .input-group { display: flex; flex-direction: column; }
+        .full-width { grid-column: 1 / -1; }
+        .input-group label { margin-bottom: 8px; color: #9ca3af; font-weight: bold; }
+        .input-field { background: #374151; color: #fff; border: 2px solid #4b5563; border-radius: 8px; padding: 12px; font-size: 1rem; font-family: inherit; }
+        .input-field:focus { outline: none; border-color: #007bff; }
+        textarea.input-field { resize: vertical; min-height: 80px; }
+        .modal-footer { padding: 20px; background: #1a202c; display: flex; justify-content: space-between; gap: 10px; position: sticky; bottom: 0; }
+        .modal-footer button { flex: 1; padding: 15px; border: none; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; }
+        .btn-delete { background: #dc2626; color: #fff; }
+        .btn-save { background: #10b981; color: #fff; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-nav">
+    <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
+    <a href="produtos.html" class="nav-btn">📦 Produtos</a>
+    <a href="clientes.html" class="nav-btn">👥 Clientes</a>
+    <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
+    <a href="servicos_do_dia.html" class="nav-btn">📋 Serviços do Dia</a>
+    <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
+    <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
+    <a href="recebimentos.html" class="nav-btn">💰 Recebimentos</a> 
+    <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
+    <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
+</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>👥 Gerenciar Clientes</h1>
+        </div>
+        
+        <div class="manager-header">
+            <h2 style="color: #fff;">Lista de Clientes</h2>
+            <button class="btn-add" onclick="openModal()">+ Adicionar Cliente</button>
+        </div>
+
+        <div id="loading-msg">Carregando clientes...</div>
+
+        <div id="clientes-lista">
+            </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Adicionar Cliente</h2>
+                <button class="close-btn" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                
+                <div class="section-title">Dados Pessoais e Acesso</div>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label for="modal-nome">Nome Completo</label>
+                        <input type="text" id="modal-nome" class="input-field" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="modal-telefone">Telefone (WhatsApp)</label>
+                        <input type="tel" id="modal-telefone" class="input-field" placeholder="149..." required>
+                    </div>
+                    <div class="input-group full-width">
+                        <label for="modal-email-acesso">Email de Acesso (Login do Cliente)</label>
+                        <input type="email" id="modal-email-acesso" class="input-field" placeholder="ex: cliente@gmail.com">
+                    </div>
+                </div>
+
+                <div class="section-title">Endereço</div>
+                <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr;">
+                    <div class="input-group">
+                        <label for="modal-endereco-rua">Rua</label>
+                        <input type="text" id="modal-endereco-rua" class="input-field">
+                    </div>
+                     <div class="input-group">
+                        <label for="modal-endereco-num">Nº</label>
+                        <input type="text" id="modal-endereco-num" class="input-field">
+                    </div>
+                     <div class="input-group">
+                        <label for="modal-endereco-bairro">Bairro</label>
+                        <input type="text" id="modal-endereco-bairro" class="input-field">
+                    </div>
+                </div>
+
+                <div class="section-title">Serviço e Faturamento</div>
+                 <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                    <div class="input-group">
+                        <label for="modal-mensalidade">Mensalidade Base (R$)</label>
+                        <input type="number" step="0.01" id="modal-mensalidade" class="input-field" placeholder="Ex: 150.00">
+                    </div>
+                    <div class="input-group">
+                        <label for="modal-dia-vencimento">Dia do Vencimento</label>
+                        <input type="number" id="modal-dia-vencimento" class="input-field" placeholder="Ex: 5, 10, 20">
+                    </div>
+                    <div class="input-group">
+                        <label for="modal-dia-visita">Dia da Visita</label>
+                        <input type="text" id="modal-dia-visita" class="input-field" placeholder="Ex: Toda Segunda">
+                    </div>
+                </div>
+                
+                <div class="section-title">Outros</div>
+                <div class="input-group full-width">
+                    <label for="modal-observacoes">Observações</label>
+                    <textarea id="modal-observacoes" class="input-field" placeholder="Ex: Chave debaixo do tapete, cachorro é bravo, etc."></textarea>
+                </div>
+                
+                <input type="hidden" id="modal-edit-id">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-delete" onclick="handleDelete()">Excluir Cliente</button>
+                <button class="btn-save" onclick="handleSave()">Salvar Cliente</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { getDatabase, ref, push, get, set, remove, onChildAdded, onChildChanged, onChildRemoved } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
+            authDomain: "tomazela-piscinas.firebaseapp.com",
+            databaseURL: "https://tomazela-piscinas-default-rtdb.firebaseio.com", 
+            projectId: "tomazela-piscinas",
+            storageBucket: "tomazela-piscinas.firebasestorage.app",
+            messagingSenderId: "776818671387",
+            appId: "1:776818671387:web:ca4211e6fa8f3f1c889dbe",
+            measurementId: "G-PP230KYC4X"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        
+        const clientesRef = ref(database, 'clientes');
+
+        
+        // --- VIGIA E LOGOUT ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                initPage();
+            } else {
+                window.location.href = 'login_piscina.html';
+            }
+        });
+        
+        const logoutBtn = document.getElementById('logout-btn');
+        logoutBtn.addEventListener('click', () => {
+            if (confirm("Tem certeza que deseja sair?")) {
+                signOut(auth); 
+            }
+        });
+        
+        // --- INICIALIZAÇÃO DA PÁGINA ---
+        function initPage() {
+            document.getElementById('loading-msg').style.display = 'none';
+            document.getElementById('clientes-lista').style.display = 'grid';
+            
+            attachListeners();
+        }
+
+        function attachListeners() {
+            onChildAdded(clientesRef, (snapshot) => renderItemCard(snapshot));
+            onChildChanged(clientesRef, (snapshot) => renderItemCard(snapshot));
+            onChildRemoved(clientesRef, (snapshot) => {
+                const el = document.getElementById(snapshot.key);
+                if (el) el.remove();
+            });
+        }
+        
+        // --- RENDERIZAR O CARD DO CLIENTE (ATUALIZADO) ---
+        function renderItemCard(snapshot) {
+            const id = snapshot.key;
+            const item = snapshot.val();
+            const container = document.getElementById('clientes-lista');
+            
+            let existingCard = document.getElementById(id);
+            if (!existingCard) {
+                existingCard = document.createElement('div');
+                existingCard.id = id;
+                container.appendChild(existingCard);
+            }
+            
+            existingCard.className = `item-card`;
+            
+            let mensalidadeHTML = item.mensalidade ? 
+                `<div class="mensalidade">R$ ${Number(item.mensalidade).toFixed(2)}</div>` : 
+                '<div class="mensalidade" style="color: #9ca3af;">(Sem mensalidade)</div>';
+            
+            let vencimentoHTML = item.diaVencimento ? 
+                `<div class="info">📅 Vencimento: Dia ${item.diaVencimento}</div>` : 
+                '<div class="info">📅 Vencimento: N/A</div>';
+                
+            // ⭐ NOVO: Mostra o email de acesso
+            let emailHTML = item.emailAcesso ?
+                `<div class="info">📧 Login: ${item.emailAcesso}</div>` :
+                '<div class="info" style="color: #f59e0b;">📧 Cliente sem login</div>';
+
+
+            existingCard.innerHTML = `
+                <div>
+                    <div class="nome">${item.nome}</div>
+                    ${emailHTML} <div class="info">📞 ${item.telefone || '(Sem telefone)'}</div>
+                    <div class="info">📍 ${item.enderecoRua || '(Sem endereço)'}, ${item.enderecoNum || 'S/N'}</div>
+                    ${vencimentoHTML}
+                    ${mensalidadeHTML}
+                </div>
+                <button class="btn-edit" onclick="openModal('${id}')">Editar / Ver Mais</button>
+            `;
+        }
+
+        // --- LÓGICA DO MODAL (ATUALIZADA) ---
+        
+        function resetModal() {
+            document.getElementById('modal-nome').value = '';
+            document.getElementById('modal-telefone').value = '';
+            document.getElementById('modal-email-acesso').value = ''; // ⭐ NOVO
+            document.getElementById('modal-endereco-rua').value = '';
+            document.getElementById('modal-endereco-num').value = '';
+            document.getElementById('modal-endereco-bairro').value = '';
+            document.getElementById('modal-mensalidade').value = '';
+            document.getElementById('modal-dia-vencimento').value = '';
+            document.getElementById('modal-dia-visita').value = '';
+            document.getElementById('modal-observacoes').value = '';
+            document.getElementById('modal-edit-id').value = '';
+        }
+        
+        window.openModal = async (id = null) => {
+            const modal = document.getElementById('modal');
+            resetModal(); 
+
+            if (id) {
+                // EDITANDO
+                document.getElementById('modal-title').textContent = 'Editar Cliente';
+                document.querySelector('.btn-delete').style.display = 'block';
+                document.getElementById('modal-edit-id').value = id;
+                
+                const itemRef = ref(database, `clientes/${id}`);
+                const snapshot = await get(itemRef);
+                const item = snapshot.val();
+                
+                document.getElementById('modal-nome').value = item.nome || '';
+                document.getElementById('modal-telefone').value = item.telefone || '';
+                document.getElementById('modal-email-acesso').value = item.emailAcesso || ''; // ⭐ NOVO
+                document.getElementById('modal-endereco-rua').value = item.enderecoRua || '';
+                document.getElementById('modal-endereco-num').value = item.enderecoNum || '';
+                document.getElementById('modal-endereco-bairro').value = item.enderecoBairro || '';
+                document.getElementById('modal-mensalidade').value = item.mensalidade || '';
+                document.getElementById('modal-dia-vencimento').value = item.diaVencimento || '';
+                document.getElementById('modal-dia-visita').value = item.diaVisita || '';
+                document.getElementById('modal-observacoes').value = item.observacoes || '';
+                
+            } else {
+                // ADICIONANDO
+                document.getElementById('modal-title').textContent = 'Adicionar Cliente';
+                document.querySelector('.btn-delete').style.display = 'none'; 
+            }
+            
+            modal.classList.add('active');
+        }
+
+        window.closeModal = () => {
+            document.getElementById('modal').classList.remove('active');
+        }
+        
+        // --- SALVAR (ATUALIZADO) ---
+        window.handleSave = async () => {
+            const id = document.getElementById('modal-edit-id').value;
+            let mensalidadeValor = document.getElementById('modal-mensalidade').value.replace(',', '.');
+            
+            let itemData = {
+                nome: document.getElementById('modal-nome').value,
+                telefone: document.getElementById('modal-telefone').value,
+                emailAcesso: document.getElementById('modal-email-acesso').value, // ⭐ NOVO
+                enderecoRua: document.getElementById('modal-endereco-rua').value,
+                enderecoNum: document.getElementById('modal-endereco-num').value,
+                enderecoBairro: document.getElementById('modal-endereco-bairro').value,
+                mensalidade: mensalidadeValor ? Number(mensalidadeValor) : 0,
+                diaVencimento: Number(document.getElementById('modal-dia-vencimento').value) || 0,
+                diaVisita: document.getElementById('modal-dia-visita').value,
+                observacoes: document.getElementById('modal-observacoes').value
+            };
+            
+            if (!itemData.nome || !itemData.telefone) {
+                alert("Por favor, preencha pelo menos o Nome e o Telefone.");
+                return;
+            }
+            
+            try {
+                if (id) {
+                    await set(ref(database, `clientes/${id}`), itemData);
+                } else {
+                    await push(clientesRef, itemData);
+                }
+                closeModal();
+            } catch (e) {
+                console.error("Erro ao salvar: ", e);
+                alert("Erro ao salvar o cliente.");
+            }
+        }
+        
+        window.handleDelete = async () => {
+            const id = document.getElementById('modal-edit-id').value;
+            const nome = document.getElementById('modal-nome').value;
+
+            if (confirm(`Tem certeza que quer excluir o cliente "${nome}"? \n\nIsso não pode ser desfeito.`)) {
+                try {
+                    await remove(ref(database, `clientes/${id}`));
+                    closeModal();
+                } catch (e) {
+                    console.error("Erro ao excluir: ", e);
+                    alert("Erro ao excluir o cliente.");
+                }
+            }
+        }
+
+    </script>
+</body>
+</html>

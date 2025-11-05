@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDV - Admin Piscina</title>
+    <style>
+        /* (Seu CSS está 100% igual, sem mudanças) */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom, #004e92 0%, #000428 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .admin-nav {
+            background: #111827;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            background: #374151; color: #f3f4f6; border: none;
+            padding: 10px 15px; border-radius: 8px; font-weight: bold;
+            font-size: 0.9rem; cursor: pointer; text-decoration: none; 
+            transition: all 0.3s; font-family: inherit; 
+        }
+        .nav-btn:hover { background: #4b5563; }
+        .nav-btn.active { background: #007bff; color: #fff; } /* Azul Ativo */
+        .nav-btn.logout { background: #dc2626; color: #fff; margin-left: auto; }
+        .nav-btn.logout:hover { background: #ef4444; }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px 20px 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 25px;
+            font-size: 2.5rem;
+        }
+        .pdv-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* 1 coluna mobile */
+            gap: 20px;
+        }
+        @media (min-width: 768px) {
+            .pdv-grid { grid-template-columns: 1fr 1fr; } /* 2 colunas tablet */
+        }
+        @media (min-width: 1200px) {
+            .pdv-grid { grid-template-columns: 1fr 1fr 1fr; } /* 3 colunas desktop */
+        }
+
+        .pdv-coluna {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            border-radius: 16px;
+            padding: 20px;
+            border: 2px solid #374151;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .pdv-coluna h2 {
+            font-size: 1.5rem;
+            color: #007bff;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #4b5563;
+            padding-bottom: 10px;
+        }
+        
+        .cardapio-scroll {
+            overflow-y: auto;
+            flex: 1;
+        }
+        .item-cardapio {
+            background: #374151;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .item-cardapio:hover {
+            background: #4b5563;
+        }
+        .item-cardapio span {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        .item-cardapio .preco {
+            font-weight: bold;
+            color: #10b981; /* Verde */
+        }
+
+        .carrinho-scroll {
+            overflow-y: auto;
+            flex: 1;
+            min-height: 200px;
+        }
+        .carrinho-item {
+            background: #374151;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .carrinho-item-qty {
+            display: flex;
+            align-items: center;
+            background: #2d3748;
+            border-radius: 6px;
+            padding: 2px;
+        }
+        .qty-btn {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            width: 28px;
+            height: 28px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .qty-display {
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 0 10px;
+            min-width: 20px;
+            text-align: center;
+        }
+        
+        .carrinho-info {
+            flex: 1;
+        }
+        .carrinho-info .nome {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .carrinho-preco {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            margin-top: 5px;
+        }
+        .input-preco {
+            background: #4b5563;
+            color: #fff;
+            border: 1px solid #007bff;
+            border-radius: 6px;
+            padding: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            width: 100px;
+            font-family: inherit;
+        }
+        .input-preco:focus {
+            outline: none;
+            background: #5e6c80;
+        }
+        
+        .carrinho-preco-total {
+             font-size: 1.1rem;
+            font-weight: bold;
+            color: #10b981;
+            text-align: right;
+        }
+        .btn-excluir {
+            background: #dc2626;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        #total-carrinho {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #007bff;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: right;
+        }
+        
+        .form-scroll {
+            overflow-y: auto;
+            flex: 1;
+        }
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { margin-bottom: 8px; color: #9ca3af; font-weight: bold; }
+        .input-field { background: #374151; color: #fff; border: 2px solid #4b5563; border-radius: 8px; padding: 12px; font-size: 1rem; font-family: inherit; }
+        .input-field:focus { outline: none; border-color: #007bff; }
+        
+        #btn-enviar-manual {
+            width: 100%;
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        #btn-enviar-manual:disabled {
+            background: #4b5563; color: #9ca3af; cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-nav">
+    <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
+    <a href="produtos.html" class="nav-btn">📦 Produtos</a>
+    <a href="clientes.html" class="nav-btn">👥 Clientes</a>
+    <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
+    <a href="servicos_do_dia.html" class="nav-btn">📋 Serviços do Dia</a>
+    <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
+    <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
+    <a href="recebimentos.html" class="nav-btn">💰 Recebimentos</a> 
+    <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
+    <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
+</div>
+
+    <div class="container">
+        <h1>✍️ PDV - Lançar Serviço/Venda</h1>
+
+        <div class="pdv-grid">
+            
+            <div class="pdv-coluna" id="coluna-cardapio">
+                <h2>1. Itens</h2>
+                <div class="cardapio-scroll">
+                    <h3 style="color:#007bff; margin: 15px 0 10px 0;">📦 Produtos</h3>
+                    <div id="produtos-container">
+                        <p>Carregando produtos...</p>
+                    </div>
+                    
+                    <h3 style="color:#007bff; margin: 15px 0 10px 0;">🔧 Serviços Avulsos</h3>
+                    <div id="servicos-container">
+                        </div>
+                </div>
+            </div>
+
+            <div class="pdv-coluna" id="coluna-carrinho">
+                <h2>2. Pedido Atual</h2>
+                <div class="carrinho-scroll" id="pedido-atual-container">
+                    <p style="color: #9ca3af; text-align: center;">Selecione um cliente e adicione itens...</p>
+                </div>
+                <div id="total-carrinho">
+                    Total: R$ 0,00
+                </div>
+            </div>
+
+            <div class="pdv-coluna" id="coluna-cliente">
+                <h2>3. Cliente e Fechamento</h2>
+                <div class="form-scroll">
+                    <form id="form-manual">
+                        <div class="input-group">
+                            <label for="select-cliente">1. Selecionar Cliente</label>
+                            <select id="select-cliente" class="input-field">
+                                <option value="">--- Selecione um cliente ---</option>
+                                </select>
+                        </div>
+                        
+                        <h3 style="color:#007bff; margin: 20px 0 10px 0;">2. Dados (Automático)</h3>
+                        <div class="input-group">
+                            <label for="cliente-nome">Nome</label>
+                            <input type="text" id="cliente-nome" class="input-field" disabled>
+                        </div>
+                        <div class="input-group" style="margin-top: 15px;">
+                            <label for="cliente-endereco">Endereço</label>
+                            <input type="text" id="cliente-endereco" class="input-field" disabled>
+                        </div>
+                        
+                        <h3 style="color:#007bff; margin: 20px 0 10px 0;">3. Pagamento</h3>
+                        <div class="form-grid">
+                             <div class="input-group">
+                                <label for="pagamento">Forma</label>
+                                <select id="pagamento" class="input-field" onchange="toggleTroco(this.value)">
+                                    <option value="pix">PIX</option>
+                                    <option value="credito">Crédito</option>
+                                    <option value="debito">Débito</option>
+                                    <option value="dinheiro">Dinheiro</option>
+                                    <option value="mensalidade">Lançar na Mensalidade</option>
+                                </select>
+                            </div>
+                            <div class="input-group" id="troco-section" style="display: none;">
+                                <label for="troco-valor">Troco para?</label>
+                                <input type="text" id="troco-valor" class="input-field" placeholder="Ex: 50">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" id="btn-enviar-manual">Lançar Serviço/Venda</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+    
+    // SUA MESMA CONFIGURAÇÃO
+    const firebaseConfig = {
+        apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
+        authDomain: "tomazela-piscinas.firebaseapp.com",
+        databaseURL: "https://tomazela-piscinas-default-rtdb.firebaseio.com", 
+        projectId: "tomazela-piscinas",
+        storageBucket: "tomazela-piscinas.firebasestorage.app",
+        messagingSenderId: "776818671387",
+        appId: "1:776818671387:web:ca4211e6fa8f3f1c889dbe",
+        measurementId: "G-PP230KYC4X"
+    };
+    
+    // Inicializa o App e o Database
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const auth = getAuth(app);
+    
+    // Referências do Banco de Dados
+    const produtosRef = ref(database, 'produtos');
+    const clientesRef = ref(database, 'clientes');
+    const pedidosRef = ref(database, 'servicos'); 
+
+    // Lista de serviços (como no seu código)
+    const servicos_avulsos = [
+        { id: 's0', nome: 'Cobrança de Mensalidade', preco: 0.00 },
+        { id: 's1', nome: 'Visita Técnica', preco: 80.00 }, 
+        { id: 's2', nome: 'Limpeza Avulsa', preco: 120.00 }, 
+        { id: 's3', nome: 'Troca de Areia', preco: 250.00 }, 
+        { id: 's4', nome: 'Tratamento de Choque', preco: 150.00 }
+    ];
+
+    // --- VARIÁVEIS GLOBAIS ---
+    var carrinho = [];
+    var produtos_db = []; 
+    var clientes_db = []; 
+    var clienteSelecionado = null;
+    
+    
+    // --- VIGIA E LOGOUT ---
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            window.location.href = 'login_piscina.html';
+        } else {
+            initPage();
+        }
+    });
+    
+    const logoutBtn = document.getElementById('logout-btn');
+    logoutBtn.addEventListener('click', () => {
+        if (confirm("Tem certeza que deseja sair?")) {
+            signOut(auth);
+        }
+    });
+    
+    function initPage() {
+        carregarDadosDoFirebase();
+        document.getElementById('select-cliente').addEventListener('change', preencherCliente);
+        document.getElementById('form-manual').addEventListener('submit', enviarPedido);
+    }
+
+    // --- CARREGAR DADOS DO FIREBASE ---
+    
+    async function carregarDadosDoFirebase() {
+        try {
+            const [produtosSnap, clientesSnap] = await Promise.all([
+                get(produtosRef),
+                get(clientesRef)
+            ]);
+
+            // Processa Produtos
+            produtos_db = [];
+            if (produtosSnap.exists()) {
+                produtosSnap.forEach(child => {
+                    const item = child.val();
+                    if (!item.pausado) {
+                        item.id = child.key; 
+                        produtos_db.push(item);
+                    }
+                });
+            }
+            
+            // Processa Clientes
+            clientes_db = [];
+            if (clientesSnap.exists()) {
+                clientesSnap.forEach(child => {
+                    const item = child.val();
+                    item.id = child.key; 
+                    clientes_db.push(item);
+                });
+            }
+            
+            renderizarListas();
+
+        } catch (error) {
+            console.error("Erro ao carregar dados:", error);
+            alert("ERRO: Não foi possível carregar os dados do Firebase.");
+        }
+    }
+    
+    function renderizarListas() {
+        const produtosContainer = document.getElementById('produtos-container');
+        const servicosContainer = document.getElementById('servicos-container');
+        const clientesSelect = document.getElementById('select-cliente');
+        
+        produtosContainer.innerHTML = '';
+        servicosContainer.innerHTML = '';
+        
+        // Renderiza Produtos
+        produtos_db.forEach(item => {
+            produtosContainer.innerHTML += `
+                <div class="item-cardapio" onclick="adicionarProduto('${item.id}')">
+                    <span>${item.nome}</span>
+                    <span class="preco">R$ ${Number(item.preco).toFixed(2)}</span>
+                </div>
+            `;
+        });
+        
+        // Renderiza Serviços
+        servicos_avulsos.forEach(item => {
+            servicosContainer.innerHTML += `
+                <div class="item-cardapio" onclick="adicionarServico('${item.id}')">
+                    <span>${item.nome}</span>
+                    <span class="preco">R$ ${Number(item.preco).toFixed(2)}</span>
+                </div>
+            `;
+        });
+        
+        // Renderiza Clientes no Dropdown
+        for (let i = clientesSelect.options.length - 1; i >= 1; i--) {
+            clientesSelect.remove(i);
+        }
+        clientes_db.sort((a, b) => a.nome.localeCompare(b.nome)); 
+        clientes_db.forEach(item => {
+            const option = new Option(`${item.nome} (${item.enderecoRua}, ${item.enderecoNum})`, item.id);
+            clientesSelect.add(option);
+        });
+    }
+    
+    // --- PREENCHER DADOS DO CLIENTE ---
+    function preencherCliente() {
+        const clienteId = document.getElementById('select-cliente').value;
+        if (!clienteId) {
+            document.getElementById('cliente-nome').value = '';
+            document.getElementById('cliente-endereco').value = '';
+            clienteSelecionado = null;
+            return;
+        }
+        
+        clienteSelecionado = clientes_db.find(c => c.id === clienteId);
+        
+        document.getElementById('cliente-nome').value = clienteSelecionado.nome;
+        let enderecoCompleto = `${clienteSelecionado.enderecoRua || ''}, ${clienteSelecionado.enderecoNum || 'S/N'} - ${clienteSelecionado.enderecoBairro || ''}`;
+        document.getElementById('cliente-endereco').value = enderecoCompleto;
+    }
+
+    // --- LÓGICA DO CARRINHO (COM QUANTIDADE E PREÇO EDITÁVEL) ---
+    
+    function renderizarCarrinho() {
+        const container = document.getElementById('pedido-atual-container');
+        let subtotal = 0;
+        
+        if (carrinho.length === 0) {
+            container.innerHTML = '<p style="color: #9ca3af; text-align: center;">Adicione itens...</p>';
+        } else {
+            container.innerHTML = '';
+            carrinho.forEach((item, index) => {
+                subtotal += (item.precoTotal * item.quantidade);
+                
+                container.innerHTML += `
+                    <div class="carrinho-item">
+                        <div class="carrinho-item-qty">
+                            <button type="button" class="qty-btn" onclick="diminuirQuantidade(${index})">-</button>
+                            <span class="qty-display">${item.quantidade}</span>
+                            <button type="button" class="qty-btn" onclick="aumentarQuantidade(${index})">+</button>
+                        </div>
+                        <div class="carrinho-info">
+                            <div class="nome">${item.nome}</div>
+                            <div class="carrinho-preco">
+                                R$ <input type="number" step="0.01" class="input-preco" 
+                                           value="${item.precoTotal.toFixed(2)}" 
+                                           onchange="atualizarPreco(${index}, this.value)"> / un
+                            </div>
+                        </div>
+                        <span class="carrinho-preco-total">R$ ${(item.precoTotal * item.quantidade).toFixed(2)}</span>
+                        <button type="button" class="btn-excluir" onclick="removerDoCarrinho(${index})">Excluir</button>
+                    </div>
+                `;
+            });
+        }
+        
+        document.getElementById('total-carrinho').textContent = `Total: R$ ${subtotal.toFixed(2)}`;
+    }
+    
+    window.atualizarPreco = (index, novoPreco) => {
+        const preco = parseFloat(novoPreco.replace(',', '.'));
+        if (isNaN(preco) || preco < 0) {
+            renderizarCarrinho(); // Reseta se o valor for inválido
+            return;
+        }
+        carrinho[index].precoTotal = preco; // Atualiza o preço no carrinho
+        renderizarCarrinho(); // Re-desenha com o novo total
+    }
+    
+    window.aumentarQuantidade = (index) => {
+        carrinho[index].quantidade++;
+        renderizarCarrinho();
+    }
+    
+    window.diminuirQuantidade = (index) => {
+        carrinho[index].quantidade--;
+        if (carrinho[index].quantidade <= 0) {
+            removerDoCarrinho(index);
+        } else {
+            renderizarCarrinho();
+        }
+    }
+    
+    window.removerDoCarrinho = (index) => {
+        carrinho.splice(index, 1);
+        renderizarCarrinho();
+    }
+
+    window.adicionarProduto = (id) => {
+        const indexExistente = carrinho.findIndex(item => item.tipo === 'produto' && item.itemId === id);
+        
+        if (indexExistente > -1) {
+            aumentarQuantidade(indexExistente);
+        } else {
+            const produto = produtos_db.find(p => p.id === id);
+            carrinho.push({
+                itemId: id, 
+                tipo: 'produto',
+                nome: produto.nome,
+                precoTotal: produto.preco, // Preço original (editável)
+                quantidade: 1
+            });
+            renderizarCarrinho();
+        }
+    }
+
+    window.adicionarServico = (id) => {
+        const indexExistente = carrinho.findIndex(item => item.tipo === 'servico' && item.itemId === id);
+
+        if (indexExistente > -1) {
+            aumentarQuantidade(indexExistente);
+        } else {
+            const servico = servicos_avulsos.find(s => s.id === id);
+            carrinho.push({
+                itemId: id,
+                tipo: 'servico',
+                nome: servico.nome,
+                precoTotal: servico.preco, // Preço original (editável)
+                quantidade: 1
+            });
+            renderizarCarrinho();
+        }
+    }
+
+    // --- LÓGICA DO FORMULÁRIO ---
+    
+    window.toggleTroco = (valor) => {
+        document.getElementById('troco-section').style.display = (valor === 'dinheiro') ? 'block' : 'none';
+    }
+    
+    // --- ENVIO DO PEDIDO MANUAL ---
+    
+    async function enviarPedido(e) {
+        e.preventDefault();
+        const submitBtn = document.getElementById('btn-enviar-manual');
+        
+        if (carrinho.length === 0) {
+            alert('O carrinho está vazio!');
+            return;
+        }
+        if (!clienteSelecionado) {
+            alert('Por favor, selecione um cliente da lista!');
+            return;
+        }
+        
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Enviando...';
+
+        const pagamentoSelect = document.getElementById('pagamento');
+        // ⭐ MUDANÇA: Salva o TEXTO do pagamento ("Lançar na Mensalidade")
+        let metodoPagamento = pagamentoSelect.options[pagamentoSelect.selectedIndex].text;
+        let tipoPagamentoValue = pagamentoSelect.value; // "mensalidade"
+
+        if (tipoPagamentoValue === 'dinheiro' && document.getElementById('troco-valor').value) {
+            metodoPagamento += ` (Troco para: R$ ${document.getElementById('troco-valor').value})`;
+        }
+
+        var subtotal = carrinho.reduce((sum, item) => sum + (item.precoTotal * item.quantidade), 0);
+        
+        // ⭐⭐ AQUI ESTÁ A CORREÇÃO DO BUG ⭐⭐
+        const pedidoCompleto = {
+            cliente: clienteSelecionado, 
+            itens: carrinho,
+            pagamento: metodoPagamento, // Salva o TEXTO (Ex: "Lançar na Mensalidade")
+            total: subtotal,
+            status: 'Pendente', 
+            hora: new Date().toISOString(),
+            faturado: false // <-- A LINHA QUE FALTAVA!
+        };
+        
+        try {
+            // Se NÃO for "Lançar na Mensalidade", não precisamos salvar
+            if (tipoPagamentoValue !== 'mensalidade') {
+                 alert(`Venda rápida registrada como ${metodoPagamento} no valor de R$ ${subtotal.toFixed(2)}.`);
+                 // (Poderíamos salvar em 'vendas_rapidas' aqui, mas por enquanto só alerta)
+            } else {
+                // Salva em "servicos" APENAS SE for para faturar
+                await push(pedidosRef, pedidoCompleto);
+                alert('Serviço/Venda lançado com sucesso para o faturamento!');
+            }
+
+            // Limpa tudo, independente do tipo de venda
+            carrinho = [];
+            clienteSelecionado = null;
+            document.getElementById('form-manual').reset(); 
+            toggleTroco(''); 
+            renderizarCarrinho();
+            
+        } catch (error) {
+            console.error("Erro ao enviar pedido: ", error);
+            alert('Erro ao enviar pedido. Tente novamente.');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Lançar Serviço/Venda';
+        }
+    }
+    
+    // --- INICIALIZAÇÃO DAS FUNÇÕES GLOBAIS ---
+    window.toggleTroco = toggleTroco;
+    window.adicionarProduto = adicionarProduto;
+    window.adicionarServico = adicionarServico;
+    window.removerDoCarrinho = removerDoCarrinho;
+    window.aumentarQuantidade = aumentarQuantidade;
+    window.diminuirQuantidade = diminuirQuantidade;
+    window.atualizarPreco = atualizarPreco;
+
+</script>
+</body>
+</html>

@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faturamento - Admin Piscina</title>
+    <style>
+        /* (Todo o seu CSS de antes, sem mudanças) */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom, #004e92 0%, #000428 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .admin-nav {
+            background: #111827;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            background: #374151; color: #f3f4f6; border: none;
+            padding: 10px 15px; border-radius: 8px; font-weight: bold;
+            font-size: 0.9rem; cursor: pointer; text-decoration: none; 
+            transition: all 0.3s; font-family: inherit; 
+        }
+        .nav-btn:hover { background: #4b5563; }
+        .nav-btn.active { background: #10b981; color: #fff; }
+        .nav-btn.logout { background: #dc2626; color: #fff; margin-left: auto; }
+        .nav-btn.logout:hover { background: #ef4444; }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5rem; color: #fff; }
+
+        .faturamento-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        @media (min-width: 1000px) {
+            .faturamento-grid {
+                grid-template-columns: 350px 1fr;
+            }
+        }
+        
+        .coluna-clientes, .coluna-fatura {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            border-radius: 16px;
+            padding: 20px;
+            border: 2px solid #374151;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .coluna-header {
+            font-size: 1.5rem;
+            color: #007bff;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #4b5563;
+            padding-bottom: 10px;
+        }
+        
+        .scroll-container {
+            overflow-y: auto;
+            flex: 1;
+        }
+        .cliente-card {
+            background: #374151;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            /* ⭐ Borda verde para "A Faturar" */
+            border-left: 4px solid #10b981; 
+        }
+        .cliente-card .nome {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        /* ⭐ Texto de status (substitui o vencimento) */
+        .cliente-card .status-fatura {
+            font-size: 1rem;
+            color: #10b981;
+            font-weight: bold;
+        }
+        .btn-ver-fatura {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .btn-ver-fatura:disabled {
+            background: #4b5563;
+            cursor: not-allowed;
+        }
+        
+        #fatura-container {
+            display: none;
+        }
+        .fatura-detalhes {
+            background: #ffffff;
+            color: #000;
+            border-radius: 8px;
+            padding: 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .print-item-table {
+            display: none;
+        }
+        .fatura-detalhes h4 {
+            font-size: 1.2rem;
+            color: #000;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1rem;
+            padding: 5px 0;
+        }
+        .item-row .nome { font-weight: 500; }
+        .item-row .total { font-weight: bold; }
+        
+        .fatura-total-box {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px dashed #ccc;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        .total-row.final {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #000;
+            border-top: 2px solid #000;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        
+        .fatura-botoes {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .fatura-botoes button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #btn-fechar-fatura { background: #10b981; color: #fff; }
+        #btn-gerar-whatsapp { background: #25d366; color: #fff; }
+        #btn-imprimir-fatura { background: #4b5563; color: #fff; }
+        
+        
+        /* (Estilos de Impressão @media print ... são idênticos, sem mudanças) */
+        @media print {
+            body {
+                background: #fff !important;
+                color: #000 !important;
+                font-family: Arial, sans-serif;
+            }
+            .admin-nav, .header, .coluna-clientes, .fatura-botoes, .fatura-detalhes h4 {
+                display: none !important;
+            }
+            #fatura-itens-avulsos-tela, .fatura-total-box {
+                display: none !important;
+            }
+            
+            .container, .faturamento-grid {
+                padding: 0;
+                margin: 0;
+                display: block;
+            }
+            .coluna-fatura {
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                top: 0; left: 0;
+                border: none;
+                background: #fff;
+                color: #000;
+                max-height: 100%;
+                padding: 0;
+            }
+            .fatura-detalhes {
+                border: none;
+                padding: 0;
+                width: 100%;
+            }
+            
+            #fatura-empresa-header, #fatura-cliente-header {
+                border: 2px solid #000;
+                padding: 10px;
+                margin-bottom: -2px; /* Junta as caixas */
+                color: #000;
+            }
+            #fatura-empresa-header {
+                text-align: left;
+                padding-bottom: 10px;
+                margin-bottom: 10px;
+                border-radius: 10px 10px 0 0;
+            }
+            #fatura-cliente-header {
+                text-align: left;
+                margin-bottom: 10px;
+                border-radius: 0 0 10px 10px;
+            }
+            #fatura-cliente-header p, #fatura-empresa-header p {
+                font-size: 10pt;
+            }
+            #fatura-empresa-header h3 {
+                font-size: 14pt;
+                color: #000;
+            }
+            
+            .print-item-table {
+                display: table !important;
+                width: 100%;
+                border-collapse: collapse;
+                border: 2px solid #000;
+                font-size: 9pt;
+            }
+            .print-item-table th, .print-item-table td {
+                border: 1px solid #000;
+                padding: 4px;
+                text-align: left;
+                color: #000;
+            }
+            .print-item-table th {
+                background: #eee;
+                font-size: 8pt;
+                font-weight: bold;
+                text-transform: uppercase;
+            }
+            
+            .col-cod { width: 8%; text-align: center; }
+            .col-desc { width: 42%; }
+            .col-un { width: 5%; text-align: center; }
+            .col-qtd { width: 10%; text-align: right; }
+            .col-unit { width: 15%; text-align: right; }
+            .col-total { width: 20%; text-align: right; }
+            
+            .print-item-table td {
+                font-weight: normal;
+            }
+            .print-item-table tbody tr:nth-child(even) {
+                background: #f9f9f9;
+            }
+            
+            #print-total-final-box {
+                display: block !important;
+                margin-top: 15px;
+                float: right;
+                width: 40%;
+                border: 2px solid #000;
+                padding: 10px;
+                border-radius: 8px;
+            }
+            #print-total-final-row {
+                display: flex;
+                justify-content: space-between;
+                font-size: 1.3rem;
+                font-weight: bold;
+                color: #000;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div class="admin-nav">
+    <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
+    <a href="produtos.html" class="nav-btn">📦 Produtos</a>
+    <a href="clientes.html" class="nav-btn">👥 Clientes</a>
+    <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
+    <a href="servicos_do_dia.html" class="nav-btn">📋 Serviços do Dia</a>
+    <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
+    <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
+    <a href="recebimentos.html" class="nav-btn">💰 Recebimentos</a> 
+    <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
+    <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
+</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>💲 Faturamento (Fechamento de Ciclo)</h1>
+        </div>
+
+        <div class="faturamento-grid">
+            
+            <div class="coluna-clientes">
+                <h2 class="coluna-header" id="coluna-clientes-titulo">Clientes com Itens a Faturar</h2>
+                <div class="scroll-container" id="clientes-lista">
+                    <p>Carregando...</p>
+                </div>
+            </div>
+
+            <div class="coluna-fatura">
+                <h2 class="coluna-header" id="fatura-titulo">Selecione um cliente</h2>
+                <div id="fatura-container">
+                    
+                    <div class="fatura-detalhes" id="fatura-detalhes-print">
+                        
+                        <div id="fatura-empresa-header"></div>
+                        <div id="fatura-cliente-header"></div>
+                        
+                        <h4>Itens Avulsos (Este Mês)</h4>
+                        <div id="fatura-itens-avulsos-tela">
+                            </div>
+                        
+                        <div class="fatura-total-box">
+                            <div class="total-row">
+                                <span>Mensalidade Base:</span>
+                                <span id="fatura-total-mensalidade">R$ 0,00</span>
+                            </div>
+                            <div class="total-row">
+                                <span>Total Avulsos:</span>
+                                <span id="fatura-total-avulsos">R$ 0,00</span>
+                            </div>
+                            <div class="total-row final">
+                                <span>TOTAL DA FATURA:</span>
+                                <span id="fatura-total-final-tela">R$ 0,00</span>
+                            </div>
+                        </div>
+
+                        <table class="print-item-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-cod">CÓD.</th>
+                                    <th class="col-desc">DESCRIÇÃO DO PRODUTO / SERVIÇO</th>
+                                    <th class="col-un">UN</th>
+                                    <th class="col-qtd">QTD</th>
+                                    <th class="col-unit">VL. UNITÁRIO</th>
+                                    <th class="col-total">VL. TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fatura-itens-lista-print">
+                                </tbody>
+                        </table>
+                        
+                        <div id="print-total-final-box" style="display: none;">
+                            <div id="print-total-final-row">
+                                <span>TOTAL DA FATURA:</span>
+                                <span id="fatura-total-final-print">R$ 0,00</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="fatura-botoes">
+                        <button id="btn-gerar-whatsapp" onclick="gerarLinkWhatsApp()">Enviar WhatsApp</button>
+                        <button id="btn-imprimir-fatura" onclick="imprimirFatura()">Imprimir Fatura</button>
+                        <button id="btn-fechar-fatura" onclick="fecharFatura()">✔️ Fechar Fatura</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { 
+            getDatabase, ref, get, push, update, 
+            query, orderByChild, equalTo 
+        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
+            authDomain: "tomazela-piscinas.firebaseapp.com",
+            databaseURL: "https://tomazela-piscinas-default-rtdb.firebaseio.com", 
+            projectId: "tomazela-piscinas",
+            storageBucket: "tomazela-piscinas.firebasestorage.app",
+            messagingSenderId: "776818671387",
+            appId: "1:776818671387:web:ca4211e6fa8f3f1c889dbe",
+            measurementId: "G-PP230KYC4X"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        
+        const clientesRef = ref(database, 'clientes');
+        const servicosRef = ref(database, 'servicos');
+        const empresaRef = ref(database, 'empresa');
+        const faturasRef = ref(database, 'faturas');
+
+        var clientes_db = [];
+        var servicos_db = []; // ⭐ Carregamos todos os serviços
+        var dadosEmpresa = {};
+        
+        var clienteSelecionado = null;
+        var itensParaFaturar = [];
+        var faturaCalculada = {};
+        
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                initPage();
+            } else {
+                window.location.href = 'login_piscina.html';
+            }
+        });
+        
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            if (confirm("Tem certeza que deseja sair?")) {
+                signOut(auth);
+            }
+        });
+        
+        // ⭐ INITPAGE ATUALIZADO (Carrega tudo)
+        async function initPage() {
+            try {
+                // Carrega clientes, TODOS os serviços, e empresa
+                const [clientesSnap, servicosSnap, empresaSnap] = await Promise.all([
+                    get(clientesRef),
+                    get(servicosRef),
+                    get(empresaRef)
+                ]);
+
+                clientes_db = [];
+                if (clientesSnap.exists()) {
+                    clientesSnap.forEach(child => {
+                        clientes_db.push({ id: child.key, ...child.val() });
+                    });
+                }
+                
+                servicos_db = [];
+                if (servicosSnap.exists()) {
+                    servicosSnap.forEach(child => {
+                        servicos_db.push({ id: child.key, ...child.val() });
+                    });
+                }
+                
+                if (empresaSnap.exists()) {
+                    dadosEmpresa = empresaSnap.val();
+                }
+                
+                renderListaClientes();
+
+            } catch (error) {
+                console.error("Erro ao carregar dados:", error);
+                document.getElementById('clientes-lista').innerHTML = '<p style="color:red;">Erro ao carregar dados. Verifique o console.</p>';
+            }
+        }
+        
+        // ⭐ RENDERLISTACLIENTES ATUALIZADO (Nova Lógica de Filtro)
+        function renderListaClientes() {
+            const container = document.getElementById('clientes-lista');
+            container.innerHTML = ''; // Limpa o "Carregando..."
+            
+            // 1. Mapear quem tem itens a faturar
+            const clientesComItens = {}; // Ex: { "-ClienteID1": 3, "-ClienteID2": 1 }
+            servicos_db.forEach(servico => {
+                if (servico.status === 'Concluído' && servico.faturado === false) {
+                    const clienteId = servico.cliente.id;
+                    if (!clientesComItens[clienteId]) {
+                        clientesComItens[clienteId] = 0;
+                    }
+                    // Conta quantos *serviços* (não itens)
+                    clientesComItens[clienteId]++; 
+                }
+            });
+            
+            // 2. Renderizar os cards
+            let clientesEncontrados = 0;
+            const idsParaFaturar = Object.keys(clientesComItens); // Lista de IDs: ["-ClienteID1", "-ClienteID2"]
+
+            // Ordena os clientes do DB por nome
+            clientes_db.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+
+            clientes_db.forEach(cliente => {
+                // Se o ID do cliente está na nossa lista de IDs a faturar...
+                if (idsParaFaturar.includes(cliente.id)) {
+                    clientesEncontrados++;
+                    const numItens = clientesComItens[cliente.id];
+                    
+                    const card = document.createElement('div');
+                    card.className = 'cliente-card';
+                    card.innerHTML = `
+                        <div class="nome">${cliente.nome}</div>
+                        <div class="status-fatura">
+                            ${numItens} item(ns) pronto(s) para faturar
+                        </div>
+                        <button class="btn-ver-fatura" id="btn-fatura-${cliente.id}" onclick="selecionarCliente('${cliente.id}')">Ver Fatura</button>
+                    `;
+                    container.appendChild(card);
+                }
+            });
+            
+            if (clientesEncontrados === 0) {
+                container.innerHTML = '<p>Nenhum cliente com itens concluídos a faturar.</p>';
+            }
+        }
+        
+        // ⭐ SELECIONARCLIENTE ATUALIZADO (Lógica antiga de filtro)
+        window.selecionarCliente = async (clienteId) => {
+            clienteSelecionado = clientes_db.find(c => c.id === clienteId);
+            if (!clienteSelecionado) return;
+            
+            const btnFatura = document.getElementById(`btn-fatura-${clienteId}`);
+            if(btnFatura) {
+                btnFatura.disabled = true;
+                btnFatura.textContent = 'Carregando...';
+            }
+            
+            itensParaFaturar = [];
+            faturaCalculada = {};
+            
+            document.getElementById('fatura-titulo').textContent = `Fatura: ${clienteSelecionado.nome}`;
+            
+            try {
+                // 1. Filtra a lista global (servicos_db) que já carregamos
+                itensParaFaturar = servicos_db.filter(s =>
+                    s.cliente.id === clienteId &&
+                    s.status === 'Concluído' &&
+                    s.faturado === false
+                );
+                
+                // (O resto da função... 2, 3, 4, 5, 6... é idêntica!)
+                
+                // 2. Renderiza cabeçalhos
+                document.getElementById('fatura-empresa-header').innerHTML = `
+                    <h3 style="margin-bottom: 5px;">${dadosEmpresa.nome || 'Nome da Empresa'}</h3>
+                    <p>${dadosEmpresa.cnpj || ''} | ${dadosEmpresa.telefone || ''}</p>
+                    <p>${dadosEmpresa.endereco || ''}</p>
+                `;
+                document.getElementById('fatura-cliente-header').innerHTML = `
+                    <p><strong>Cliente:</strong> ${clienteSelecionado.nome}</p>
+                    <p><strong>Endereço:</strong> ${clienteSelecionado.enderecoRua || ''}, ${clienteSelecionado.enderecoNum || ''}</p>
+                    <p><strong>Vencimento:</strong> ${clienteSelecionado.diaVencimento} de cada mês</p>
+                `;
+                
+                // 3. Renderiza os itens e calcula totais
+                const itensContainerTela = document.getElementById('fatura-itens-avulsos-tela');
+                const itensContainerPrint = document.getElementById('fatura-itens-lista-print');
+                
+                itensContainerTela.innerHTML = '';
+                itensContainerPrint.innerHTML = '';
+                
+                let totalAvulsos = 0;
+                let itemCounter = 1;
+                const mensalidadeBase = clienteSelecionado.mensalidade || 0;
+                
+                itensContainerPrint.innerHTML += `
+                    <tr>
+                        <td class="col-cod">${String(itemCounter++).padStart(3, '0')}</td>
+                        <td class="col-desc">Mensalidade Base</td>
+                        <td class="col-un">UN</td>
+                        <td class="col-qtd">1</td>
+                        <td class="col-unit">R$ ${mensalidadeBase.toFixed(2)}</td>
+                        <td class="col-total">R$ ${mensalidadeBase.toFixed(2)}</td>
+                    </tr>
+                `;
+
+                if (itensParaFaturar.length > 0) {
+                    itensParaFaturar.forEach(servico => {
+                        servico.itens.forEach(item => {
+                            const vlUnitario = item.precoTotal || 0;
+                            const quantidade = item.quantidade || 1;
+                            const vlTotal = vlUnitario * quantidade;
+                            
+                            totalAvulsos += vlTotal;
+                            
+                            itensContainerTela.innerHTML += `
+                                <div class="item-row">
+                                    <span class="nome">${quantidade}x ${item.nome}</span>
+                                    <span class="total">R$ ${vlTotal.toFixed(2)}</span>
+                                </div>
+                            `;
+                            
+                            itensContainerPrint.innerHTML += `
+                                <tr>
+                                    <td class="col-cod">${String(itemCounter++).padStart(3, '0')}</td>
+                                    <td class="col-desc">${item.nome}</td>
+                                    <td class="col-un">UN</td>
+                                    <td class="col-qtd">${quantidade}</td>
+                                    <td class="col-unit">R$ ${vlUnitario.toFixed(2)}</td>
+                                    <td class="col-total">R$ ${vlTotal.toFixed(2)}</td>
+                                </tr>
+                            `;
+                        });
+                    });
+                } else {
+                    itensContainerTela.innerHTML = '<p style="text-align:center; color: #555;">Nenhum item avulso este mês.</p>';
+                }
+                
+                // 4. Calcula e mostra os totais FINAIS
+                const totalFatura = mensalidadeBase + totalAvulsos;
+                
+                document.getElementById('fatura-total-mensalidade').textContent = `R$ ${mensalidadeBase.toFixed(2)}`;
+                document.getElementById('fatura-total-avulsos').textContent = `R$ ${totalAvulsos.toFixed(2)}`;
+                document.getElementById('fatura-total-final-tela').textContent = `R$ ${totalFatura.toFixed(2)}`;
+                document.getElementById('fatura-total-final-print').textContent = `R$ ${totalFatura.toFixed(2)}`;
+                
+                // 5. Salva dados para os botões
+                faturaCalculada = {
+                    cliente: clienteSelecionado,
+                    mensalidadeBase: mensalidadeBase,
+                    totalAvulsos: totalAvulsos,
+                    totalFatura: totalFatura,
+                    itensFaturados: itensParaFaturar.map(s => ({ id: s.id, itens: s.itens, total: s.total }))
+                };
+                
+                // 6. Mostra a fatura
+                document.getElementById('fatura-container').style.display = 'block';
+
+            } catch (e) {
+                console.error("Erro ao montar fatura:", e);
+                alert("Erro ao montar a fatura.");
+            } finally {
+                if(btnFatura) {
+                    btnFatura.disabled = false;
+                    btnFatura.textContent = 'Ver Fatura';
+                }
+            }
+        }
+        
+        // --- AÇÕES DOS BOTÕES (Sem mudanças) ---
+        
+        window.fecharFatura = async () => {
+            if (!clienteSelecionado || !faturaCalculada) return;
+            
+            if (!confirm(`Tem certeza que deseja FECHAR esta fatura no valor de R$ ${faturaCalculada.totalFatura.toFixed(2)} para o cliente ${clienteSelecionado.nome}? \n\nIsso marcará todos os itens avulsos como 'faturados'.`)) {
+                return;
+            }
+            
+            const btn = document.getElementById('btn-fechar-fatura');
+            btn.disabled = true;
+            btn.textContent = 'Fechando...';
+
+            try {
+                const updates = {};
+                
+                itensParaFaturar.forEach(servico => {
+                    updates[`/servicos/${servico.id}/faturado`] = true;
+                });
+                
+                const novaFaturaRef = push(faturasRef);
+                updates[`/faturas/${novaFaturaRef.key}`] = {
+                    ...faturaCalculada,
+                    dataFechamento: new Date().toISOString()
+                };
+                
+                await update(ref(database), updates);
+                
+                alert('Fatura fechada com sucesso!');
+                
+                document.getElementById('fatura-container').style.display = 'none';
+                document.getElementById('fatura-titulo').textContent = 'Selecione um cliente';
+                
+                // Recarrega TUDO (o initPage) para atualizar a lista
+                initPage(); 
+                
+            } catch (e) {
+                console.error("Erro ao fechar fatura: ", e);
+                alert("Erro ao fechar a fatura. Tente novamente.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '✔️ Fechar Fatura';
+            }
+        }
+        
+        window.gerarLinkWhatsApp = () => {
+            if (!clienteSelecionado || !faturaCalculada) return;
+            let telefone = (clienteSelecionado.telefone || '').replace(/\D/g, '');
+            if (telefone.length < 12) {
+                telefone = "55" + telefone;
+            }
+            let mensagem = `Olá, ${clienteSelecionado.nome}!\n\nSegue o fechamento da sua fatura deste mês:\n\n`;
+            mensagem += `Mensalidade Base: R$ ${faturaCalculada.mensalidadeBase.toFixed(2)}\n`;
+            if (faturaCalculada.totalAvulsos > 0) {
+                mensagem += `Serviços/Produtos Avulsos: R$ ${faturaCalculada.totalAvulsos.toFixed(2)}\n`;
+            }
+            mensagem += `\n*TOTAL: R$ ${faturaCalculada.totalFatura.toFixed(2)}*\n\n`;
+            mensagem += `Vencimento: ${clienteSelecionado.diaVencimento}/${new Date().getMonth() + 1}/${new Date().getFullYear()}\n`;
+            
+            const link = `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
+            window.open(link, '_blank');
+        }
+        
+        window.imprimirFatura = () => {
+            const printContent = document.getElementById('fatura-detalhes-print');
+            if (printContent) {
+                window.print();
+            }
+        }
+        
+        window.selecionarCliente = selecionarCliente;
+        window.fecharFatura = fecharFatura;
+        window.gerarLinkWhatsApp = gerarLinkWhatsApp;
+        window.imprimirFatura = imprimirFatura;
+
+    </script>
+</body>
+</html>

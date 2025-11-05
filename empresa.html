@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dados da Empresa - Admin Piscina</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom, #004e92 0%, #000428 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .admin-nav {
+            background: #111827;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            background: #374151; color: #f3f4f6; border: none;
+            padding: 10px 15px; border-radius: 8px; font-weight: bold;
+            font-size: 0.9rem; cursor: pointer; text-decoration: none; 
+            transition: all 0.3s; font-family: inherit; 
+        }
+        .nav-btn:hover { background: #4b5563; }
+        .nav-btn.active { background: #007bff; color: #fff; } 
+        .nav-btn.logout { background: #dc2626; color: #fff; margin-left: auto; }
+        .nav-btn.logout:hover { background: #ef4444; }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .form-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            border-radius: 16px;
+            padding: 30px;
+            border: 2px solid #374151;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #9ca3af;
+            font-weight: bold;
+        }
+        .input-field {
+            width: 100%;
+            background: #374151;
+            color: #fff;
+            border: 2px solid #4b5563;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        .btn-save {
+            width: 100%;
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-save:hover {
+            background: #059669;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-nav">
+    <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
+    <a href="produtos.html" class="nav-btn">📦 Produtos</a>
+    <a href="clientes.html" class="nav-btn">👥 Clientes</a>
+    <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
+    <a href="servicos_do_dia.html" class="nav-btn">📋 Serviços do Dia</a>
+    <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
+    <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
+    <a href="recebimentos.html" class="nav-btn">💰 Recebimentos</a> 
+    <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
+    <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
+</div>
+
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🏢 Dados da Empresa</h1>
+        </div>
+
+        <div class="form-container">
+            <form id="empresa-form">
+                <div class="input-group">
+                    <label for="empresa-nome">Nome da Empresa</label>
+                    <input type="text" id="empresa-nome" class="input-field" placeholder="Ex: Tomazela Piscinas">
+                </div>
+                <div class="input-group">
+                    <label for="empresa-cnpj">CNPJ</label>
+                    <input type="text" id="empresa-cnpj" class="input-field" placeholder="00.000.000/0001-00">
+                </div>
+                <div class="input-group">
+                    <label for="empresa-telefone">Telefone / WhatsApp</label>
+                    <input type="text" id="empresa-telefone" class="input-field" placeholder="(14) 99999-9999">
+                </div>
+                <div class="input-group">
+                    <label for="empresa-endereco">Endereço</label>
+                    <input type="text" id="empresa-endereco" class="input-field" placeholder="Rua Exemplo, 123 - Centro, Conchas/SP">
+                </div>
+
+                <button type="submit" class="btn-save" id="btn-save">Salvar Dados</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
+            authDomain: "tomazela-piscinas.firebaseapp.com",
+            databaseURL: "https://tomazela-piscinas-default-rtdb.firebaseio.com", 
+            projectId: "tomazela-piscinas",
+            storageBucket: "tomazela-piscinas.firebasestorage.app",
+            messagingSenderId: "776818671387",
+            appId: "1:776818671387:web:ca4211e6fa8f3f1c889dbe",
+            measurementId: "G-PP230KYC4X"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+
+        // Local único no banco de dados para salvar as infos da empresa
+        const empresaRef = ref(database, 'empresa');
+
+        // --- VIGIA E LOGOUT ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                carregarDadosEmpresa(); // Carrega os dados quando a página abre
+            } else {
+                window.location.href = 'login_piscina.html';
+            }
+        });
+
+        const logoutBtn = document.getElementById('logout-btn');
+        logoutBtn.addEventListener('click', () => {
+            if (confirm("Tem certeza que deseja sair?")) {
+                signOut(auth); 
+            }
+        });
+
+        // --- CARREGAR DADOS ---
+        async function carregarDadosEmpresa() {
+            try {
+                const snapshot = await get(empresaRef);
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    document.getElementById('empresa-nome').value = data.nome || '';
+                    document.getElementById('empresa-cnpj').value = data.cnpj || '';
+                    document.getElementById('empresa-telefone').value = data.telefone || '';
+                    document.getElementById('empresa-endereco').value = data.endereco || '';
+                }
+            } catch (e) {
+                console.error("Erro ao carregar dados: ", e);
+            }
+        }
+
+        // --- SALVAR DADOS ---
+        const form = document.getElementById('empresa-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save');
+            btn.disabled = true;
+            btn.textContent = 'Salvando...';
+
+            const dados = {
+                nome: document.getElementById('empresa-nome').value,
+                cnpj: document.getElementById('empresa-cnpj').value,
+                telefone: document.getElementById('empresa-telefone').value,
+                endereco: document.getElementById('empresa-endereco').value
+            };
+
+            try {
+                await set(empresaRef, dados);
+                alert("Dados da empresa salvos com sucesso!");
+            } catch (e) {
+                console.error("Erro ao salvar: ", e);
+                alert("Erro ao salvar os dados.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Salvar Dados';
+            }
+        });
+
+    </script>
+</body>
+</html>

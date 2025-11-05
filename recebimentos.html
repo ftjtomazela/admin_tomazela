@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recebimentos - Admin Piscina</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom, #004e92 0%, #000428 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .admin-nav {
+            background: #111827;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            background: #374151; color: #f3f4f6; border: none;
+            padding: 10px 15px; border-radius: 8px; font-weight: bold;
+            font-size: 0.9rem; cursor: pointer; text-decoration: none; 
+            transition: all 0.3s; font-family: inherit; 
+        }
+        .nav-btn:hover { background: #4b5563; }
+        .nav-btn.active { background: #007bff; color: #fff; } 
+        .nav-btn.logout { background: #dc2626; color: #fff; margin-left: auto; }
+        .nav-btn.logout:hover { background: #ef4444; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5rem; color: #fff; }
+
+        .financeiro-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+        @media (min-width: 900px) {
+            .financeiro-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .coluna {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            border: 2px solid #374151;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .coluna h2 {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #4b5563;
+        }
+        
+        #lista-pendentes h2 { color: #f59e0b; } /* Laranja */
+        #lista-pagos h2 { color: #10b981; } /* Verde */
+
+        .fatura-card {
+            background: #374151;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px; /* Adiciona espaçamento entre os botões */
+        }
+        .fatura-info {
+            flex-grow: 1;
+        }
+        .fatura-info strong {
+            font-size: 1.1rem;
+            color: #fff;
+        }
+        .fatura-info p {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        .fatura-valor {
+            font-size: 1.3rem;
+            font-weight: bold;
+            flex-shrink: 0; /* Impede que o valor encolha */
+        }
+        
+        /* Cor do valor pendente */
+        #lista-pendentes .fatura-valor { color: #f59e0b; }
+        /* Cor do valor pago */
+        #lista-pagos .fatura-valor { color: #10b981; }
+
+        .btn-pagar {
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+        .btn-pagar:hover { background: #059669; }
+
+        /* ⭐ NOVO: Botão de Excluir para Teste ⭐ */
+        .btn-excluir {
+            background: #dc2626;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+        .btn-excluir:hover { background: #b91c1c; }
+
+
+        .resumo-financeiro {
+            background: #1a202c;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: right;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-nav">
+        <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
+        <a href="produtos.html" class="nav-btn">📦 Produtos</a>
+        <a href="clientes.html" class="nav-btn">👥 Clientes</a>
+        <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
+        <a href="servicos_do_dia.html" class="nav-btn">📋 Serviços do Dia</a>
+        <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
+        <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
+        <a href="recebimentos.html" class="nav-btn active">💰 Recebimentos</a> 
+        <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
+        <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>💰 Recebimentos</h1>
+        </div>
+
+        <div class="financeiro-grid">
+            <div class="coluna" id="lista-pendentes">
+                <h2>A Receber (Pendentes)</h2>
+                <div id="pendentes-container">
+                    </div>
+                <div class="resumo-financeiro" id="total-pendente">
+                    Total: R$ 0,00
+                </div>
+            </div>
+
+            <div class="coluna" id="lista-pagos">
+                <h2>Recebidos (Histórico)</h2>
+                <div id="pagos-container">
+                    </div>
+                <div class="resumo-financeiro" id="total-pago">
+                    Total: R$ 0,00
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { 
+            getDatabase, ref, onValue, update
+        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
+            authDomain: "tomazela-piscinas.firebaseapp.com",
+            databaseURL: "https://tomazela-piscinas-default-rtdb.firebaseio.com", 
+            projectId: "tomazela-piscinas",
+            storageBucket: "tomazela-piscinas.firebasestorage.app",
+            messagingSenderId: "776818671387",
+            appId: "1:776818671387:web:ca4211e6fa8f3f1c889dbe",
+            measurementId: "G-PP230KYC4X"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        
+        const faturasRef = ref(database, 'faturas');
+        const rootRef = ref(database); // Referência para a raiz do banco
+
+        // --- Autenticação ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                initPage();
+            } else {
+                window.location.href = 'login_piscina.html';
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        function initPage() {
+            onValue(faturasRef, (snapshot) => {
+                const pendentesContainer = document.getElementById('pendentes-container');
+                const pagosContainer = document.getElementById('pagos-container');
+                const totalPendenteEl = document.getElementById('total-pendente');
+                const totalPagoEl = document.getElementById('total-pago');
+
+                pendentesContainer.innerHTML = '';
+                pagosContainer.innerHTML = '';
+                
+                let totalPendente = 0;
+                let totalPago = 0;
+
+                if (!snapshot.exists()) {
+                    pendentesContainer.innerHTML = '<p>Nenhuma fatura encontrada.</p>';
+                    return;
+                }
+                
+                let faturasList = [];
+                snapshot.forEach(child => {
+                    faturasList.push({ id: child.key, ...child.val() });
+                });
+                
+                faturasList.sort((a, b) => new Date(b.dataFechamento) - new Date(a.dataFechamento));
+
+                faturasList.forEach(fatura => {
+                    if (fatura.status === 'Pago') {
+                        totalPago += fatura.totalFatura;
+                        pagosContainer.appendChild(createFaturaCard(fatura));
+                    } else {
+                        totalPendente += fatura.totalFatura;
+                        pendentesContainer.appendChild(createFaturaCard(fatura));
+                    }
+                });
+                
+                totalPendenteEl.textContent = `Total: R$ ${totalPendente.toFixed(2)}`;
+                totalPagoEl.textContent = `Total: R$ ${totalPago.toFixed(2)}`;
+            });
+        }
+
+        function createFaturaCard(fatura) {
+            const data = new Date(fatura.dataFechamento);
+            const mesAno = data.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+
+            const card = document.createElement('div');
+            card.className = 'fatura-card';
+            
+            let botoesHtml = '';
+            
+            if (fatura.status === 'Pago') {
+                // Se a fatura estiver paga, aparece o botão de EXCLUIR
+                botoesHtml = `
+                    <button class="btn-excluir" onclick="excluirFatura('${fatura.id}', '${fatura.cliente.id}')">🗑️ Excluir</button>
+                `;
+            } else {
+                // Se estiver pendente, aparece o botão de Dar Baixa
+                botoesHtml = `
+                    <button class="btn-pagar" onclick="marcarComoPago('${fatura.id}', '${fatura.cliente.id}')">✔️ Dar Baixa</button>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="fatura-info">
+                    <strong>${fatura.cliente.nome}</strong>
+                    <p>Fatura de ${mesAno}</p>
+                </div>
+                <div class="fatura-valor">
+                    R$ ${fatura.totalFatura.toFixed(2)}
+                </div>
+                ${botoesHtml}
+            `;
+            return card;
+        }
+
+        // --- Ação de "Dar Baixa" ---
+        window.marcarComoPago = async (faturaId, clienteId) => {
+            if (!confirm("Tem certeza que deseja marcar esta fatura como PAGA?")) {
+                return;
+            }
+            
+            try {
+                const updates = {};
+                updates[`/faturas/${faturaId}/status`] = 'Pago';
+                updates[`/clientes/${clienteId}/faturas/${faturaId}/status`] = 'Pago';
+                await update(rootRef, updates);
+            } catch (e) {
+                console.error("Erro ao dar baixa:", e);
+                alert("Erro ao dar baixa na fatura.");
+            }
+        }
+
+        // --- ⭐ NOVA FUNÇÃO: Excluir Fatura (Apenas para Teste) ⭐ ---
+        window.excluirFatura = async (faturaId, clienteId) => {
+            if (!confirm("AVISO: Esta ação é irreversível. Tem certeza que deseja EXCLUIR esta fatura?")) {
+                return;
+            }
+            
+            try {
+                const updates = {};
+                // Remove a fatura do nó principal
+                updates[`/faturas/${faturaId}`] = null;
+                // Remove o resumo da fatura do nó do cliente
+                updates[`/clientes/${clienteId}/faturas/${faturaId}`] = null;
+
+                // Executa a exclusão atômica (remove dos dois lugares)
+                await update(rootRef, updates);
+
+            } catch (e) {
+                console.error("Erro ao excluir fatura:", e);
+                alert("Erro ao excluir fatura.");
+            }
+        }
+    </script>
+</body>
+</html>

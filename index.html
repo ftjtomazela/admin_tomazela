@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Admin Piscina</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom, #004e92 0%, #000428 100%); /* Tema Azul Piscina/Noite */
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .login-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid #007bff; /* Azul mais claro */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 450px;
+            width: 100%;
+        }
+        .login-container h1 {
+            text-align: center;
+            color: #ffffff;
+            font-size: 2rem;
+            margin-bottom: 25px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #9ca3af;
+            font-weight: bold;
+        }
+        .input-field {
+            width: 100%;
+            background: #374151;
+            color: #fff;
+            border: 2px solid #4b5563;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        .btn-login {
+            width: 100%;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-login:hover {
+            background: #0056b3;
+        }
+        #error-message {
+            color: #ef4444;
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h1>Admin Piscinas</h1>
+        <form id="login-form">
+            <div class="input-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" class="input-field" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" class="input-field" required>
+            </div>
+            <button type="submit" class="btn-login" id="login-btn">Entrar</button>
+            <p id="error-message">Email ou senha inválidos.</p>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        // Vamos importar o getAuth (Autenticação) e getDatabase (Banco de Dados)
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+        import { getDatabase } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
+        // =======================================================================
+        // SUA CONFIGURAÇÃO (com o databaseURL que você precisa adicionar)
+        // =======================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
+            authDomain: "tomazela-piscinas.firebaseapp.com",
+            // 👇 COLE AQUI A URL DO SEU REALTIME DATABASE 👇
+            databaseURL: "https://tomazela-piscinas-default-rtdb.firebaseio.com", 
+            projectId: "tomazela-piscinas",
+            storageBucket: "tomazela-piscinas.firebasestorage.app",
+            messagingSenderId: "776818671387",
+            appId: "1:776818671387:web:ca4211e6fa8f3f1c889dbe",
+            measurementId: "G-PP230KYC4X"
+        };
+        // =======================================================================
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        // Não precisamos do 'database' nesta página, mas vamos precisar nas próximas
+        // const database = getDatabase(app); 
+
+        const loginForm = document.getElementById('login-form');
+        const loginBtn = document.getElementById('login-btn');
+        const errorMessage = document.getElementById('error-message');
+
+        // Se o usuário já estiver logado, manda ele para o painel
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Vamos criar esta página a seguir!
+                window.location.href = 'admin_piscina.html'; 
+            }
+        });
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Entrando...';
+            errorMessage.style.display = 'none';
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Sucesso! O onAuthStateChanged vai pegar e redirecionar.
+                })
+                .catch((error) => {
+                    console.error(error);
+                    errorMessage.style.display = 'block';
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Entrar';
+                });
+        });
+    </script>
+
+</body>
+</html>

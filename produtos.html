@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos - Admin Piscina</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom, #004e92 0%, #000428 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        /* --- NAV ADMIN --- */
+        .admin-nav {
+            background: #111827;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            background: #374151; color: #f3f4f6; border: none;
+            padding: 10px 15px; border-radius: 8px; font-weight: bold;
+            font-size: 0.9rem; cursor: pointer; text-decoration: none; 
+            transition: all 0.3s; font-family: inherit; 
+        }
+        .nav-btn:hover { background: #4b5563; }
+        .nav-btn.active { background: #007bff; color: #fff; } /* Azul Ativo */
+        .nav-btn.logout { background: #dc2626; color: #fff; margin-left: auto; }
+        .nav-btn.logout:hover { background: #ef4444; }
+        /* --- FIM DA NAV --- */
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .manager-coluna {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            border-radius: 16px;
+            padding: 25px;
+        }
+        .coluna-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .coluna-header h2 {
+            font-size: 1.5rem;
+            color: #007bff;
+        }
+        .btn-add {
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .item-card {
+            background: #374151;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border-left: 4px solid #007bff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .item-card.pausado {
+            border-left-color: #ef4444;
+            opacity: 0.6;
+        }
+        .item-info .nome {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        .item-info .pausado-tag {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #ef4444;
+            margin-left: 5px;
+        }
+        .item-info .preco {
+            font-size: 1rem;
+            color: #9ca3af;
+        }
+        .btn-edit {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #loading-msg {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #007bff;
+            padding: 40px;
+        }
+
+        /* --- ESTILOS DO MODAL --- */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; overflow-y: auto; }
+        .modal.active { display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: linear-gradient(145deg, #2d3748, #1a202c); border-radius: 20px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; border: 2px solid #007bff; }
+        .modal-header { background: #000; padding: 20px; border-bottom: 2px solid #007bff; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+        .modal-title { font-size: 1.5rem; font-weight: bold; color: #007bff; }
+        .close-btn { background: #dc2626; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
+        .modal-body { padding: 25px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .input-group { display: flex; flex-direction: column; }
+        .full-width { grid-column: 1 / -1; }
+        .input-group label { margin-bottom: 8px; color: #9ca3af; font-weight: bold; }
+        .input-field { background: #374151; color: #fff; border: 2px solid #4b5563; border-radius: 8px; padding: 12px; font-size: 1rem; font-family: inherit; }
+        .input-field:focus { outline: none; border-color: #007bff; }
+        textarea.input-field { resize: vertical; min-height: 80px; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; background: #374151; padding: 12px; border-radius: 8px; }
+        .checkbox-group input { width: 18px; height: 18px; }
+        .checkbox-group label { margin: 0; color: #fff; }
+        .modal-footer { padding: 20px; background: #1a202c; display: flex; justify-content: space-between; gap: 10px; position: sticky; bottom: 0; }
+        .modal-footer button { flex: 1; padding: 15px; border: none; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; }
+        .btn-delete { background: #dc2626; color: #fff; }
+        .btn-save { background: #10b981; color: #fff; }
+    </style>
+</head>
+<body>
+
+ <div class="admin-nav">
+    <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
+    <a href="produtos.html" class="nav-btn">📦 Produtos</a>
+    <a href="clientes.html" class="nav-btn">👥 Clientes</a>
+    <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
+    <a href="servicos_do_dia.html" class="nav-btn">📋 Serviços do Dia</a>
+    <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
+    <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
+    <a href="recebimentos.html" class="nav-btn">💰 Recebimentos</a> 
+    <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
+    <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
+</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📦 Gerenciar Produtos</h1>
+        </div>
+
+        <div id="loading-msg">Carregando produtos...</div>
+
+        <div class="manager-coluna" style="display: none;">
+            <div class="coluna-header">
+                <h2>Todos os Produtos</h2>
+                <button class="btn-add" onclick="openModal()">+ Adicionar Produto</button>
+            </div>
+            <div id="produtos-lista">
+                </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Adicionar Produto</h2>
+                <button class="close-btn" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="input-group full-width">
+                        <label for="modal-nome">Nome do Produto</label>
+                        <input type="text" id="modal-nome" class="input-field">
+                    </div>
+                    <div class="input-group">
+                        <label for="modal-preco">Preço (Ex: 149.90)</label>
+                        <input type="number" step="0.01" id="modal-preco" class="input-field">
+                    </div>
+                    <div class="input-group checkbox-group">
+                        <input type="checkbox" id="modal-pausado">
+                        <label for="modal-pausado">Pausar item (não aparecerá no PDV)</label>
+                    </div>
+                </div>
+
+                <div class="input-group full-width" style="margin-top: 15px;">
+                    <label for="modal-descricao">Descrição (Opcional)</label>
+                    <textarea id="modal-descricao" class="input-field" placeholder="Ex: Cloro granulado 10kg, ideal para..."></textarea>
+                </div>
+                
+                <input type="hidden" id="modal-edit-id">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-delete" onclick="handleDelete()">Excluir Item</button>
+                <button class="btn-save" onclick="handleSave()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { getDatabase, ref, push, get, set, remove, onChildAdded, onChildChanged, onChildRemoved } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+
+        // SUA MESMA CONFIGURAÇÃO (com o databaseURL)
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
+            authDomain: "tomazela-piscinas.firebaseapp.com",
+            databaseURL: "https://tomazela-piscinas-default-rtdb.firebaseio.com", // A URL que você pegou
+            projectId: "tomazela-piscinas",
+            storageBucket: "tomazela-piscinas.firebasestorage.app",
+            messagingSenderId: "776818671387",
+            appId: "1:776818671387:web:ca4211e6fa8f3f1c889dbe",
+            measurementId: "G-PP230KYC4X"
+        };
+        
+        // Inicializa o App e o Database
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        
+        // Onde vamos salvar os produtos no banco de dados
+        const produtosRef = ref(database, 'produtos');
+
+        
+        // --- VIGIA E LOGOUT ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Usuário logado, pode carregar a página
+                initPage();
+            } else {
+                // Usuário não logado, chuta ele!
+                console.log("Usuário não logado. Redirecionando...");
+                window.location.href = 'login_piscina.html';
+            }
+        });
+        
+        const logoutBtn = document.getElementById('logout-btn');
+        logoutBtn.addEventListener('click', () => {
+            if (confirm("Tem certeza que deseja sair?")) {
+                signOut(auth); // O onAuthStateChanged vai pegar a mudança e redirecionar
+            }
+        });
+        
+        // --- INICIALIZAÇÃO DA PÁGINA ---
+        function initPage() {
+            document.getElementById('loading-msg').style.display = 'none';
+            document.querySelector('.manager-coluna').style.display = 'block';
+            
+            attachListeners();
+        }
+
+        // 2. OUVINTES (Listeners)
+        function attachListeners() {
+            // Quando um produto é adicionado
+            onChildAdded(produtosRef, (snapshot) => renderItemCard(snapshot));
+            // Quando um produto é modificado
+            onChildChanged(produtosRef, (snapshot) => renderItemCard(snapshot));
+            // Quando um produto é removido
+            onChildRemoved(produtosRef, (snapshot) => {
+                const el = document.getElementById(snapshot.key);
+                if (el) el.remove();
+            });
+        }
+        
+        // 3. RENDERIZAÇÃO
+        function renderItemCard(snapshot) {
+            const id = snapshot.key;
+            const item = snapshot.val();
+            const container = document.getElementById('produtos-lista');
+            
+            let existingCard = document.getElementById(id);
+            if (!existingCard) {
+                existingCard = document.createElement('div');
+                existingCard.id = id;
+                container.appendChild(existingCard);
+            }
+            
+            existingCard.className = `item-card ${item.pausado ? 'pausado' : ''}`;
+            existingCard.innerHTML = `
+                <div class="item-info">
+                    <span class="nome">${item.nome} ${item.pausado ? '<span class="pausado-tag">PAUSADO</span>' : ''}</span>
+                    <span class="preco">R$ ${Number(item.preco).toFixed(2)}</span>
+                </div>
+                <button class="btn-edit" onclick="openModal('${id}')">Editar</button>
+            `;
+        }
+
+        // --- LÓGICA DO MODAL (FUNÇÕES GLOBAIS) ---
+        
+        window.openModal = async (id = null) => {
+            const modal = document.getElementById('modal');
+            
+            // Reseta o formulário
+            document.getElementById('modal-nome').value = '';
+            document.getElementById('modal-preco').value = '';
+            document.getElementById('modal-descricao').value = '';
+            document.getElementById('modal-pausado').checked = false;
+            document.getElementById('modal-edit-id').value = id;
+
+            if (id) {
+                // EDITANDO
+                document.getElementById('modal-title').textContent = 'Editar Produto';
+                document.querySelector('.btn-delete').style.display = 'block';
+                
+                const itemRef = ref(database, `produtos/${id}`);
+                const snapshot = await get(itemRef);
+                const item = snapshot.val();
+                
+                document.getElementById('modal-nome').value = item.nome;
+                document.getElementById('modal-preco').value = item.preco;
+                document.getElementById('modal-pausado').checked = item.pausado || false;
+                document.getElementById('modal-descricao').value = item.descricao || '';
+                
+            } else {
+                // ADICIONANDO
+                document.getElementById('modal-title').textContent = 'Adicionar Produto';
+                document.querySelector('.btn-delete').style.display = 'none'; // Esconde o botão de excluir
+            }
+            
+            modal.classList.add('active');
+        }
+
+        window.closeModal = () => {
+            document.getElementById('modal').classList.remove('active');
+        }
+        
+        window.handleSave = async () => {
+            const id = document.getElementById('modal-edit-id').value;
+            let precoInput = document.getElementById('modal-preco').value.replace(',', '.');
+            
+            let itemData = {
+                nome: document.getElementById('modal-nome').value,
+                preco: Number(precoInput),
+                pausado: document.getElementById('modal-pausado').checked,
+                descricao: document.getElementById('modal-descricao').value
+            };
+            
+            // Validação simples
+            if (!itemData.nome || itemData.preco <= 0) {
+                alert("Por favor, preencha o Nome e um Preço válido.");
+                return;
+            }
+            
+            try {
+                if (id) {
+                    // Atualiza
+                    await set(ref(database, `produtos/${id}`), itemData);
+                } else {
+                    // Cria
+                    await push(produtosRef, itemData);
+                }
+                closeModal();
+            } catch (e) {
+                console.error("Erro ao salvar: ", e);
+                alert("Erro ao salvar o produto.");
+            }
+        }
+        
+        window.handleDelete = async () => {
+            const id = document.getElementById('modal-edit-id').value;
+            const nome = document.getElementById('modal-nome').value;
+
+            if (confirm(`Tem certeza que quer excluir o produto "${nome}"? \n\nIsso não pode ser desfeito.`)) {
+                try {
+                    await remove(ref(database, `produtos/${id}`));
+                    closeModal();
+                } catch (e) {
+                    console.error("Erro ao excluir: ", e);
+                    alert("Erro ao excluir o produto.");
+                }
+            }
+        }
+
+    </script>
+</body>
+</html>

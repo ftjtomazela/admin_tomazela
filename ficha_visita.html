@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha de Visita - Admin Piscina</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom, #004e92 0%, #000428 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        /* --- NAV ADMIN --- */
+        .admin-nav {
+            background: #111827;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            background: #374151; color: #f3f4f6; border: none;
+            padding: 10px 15px; border-radius: 8px; font-weight: bold;
+            font-size: 0.9rem; cursor: pointer; text-decoration: none; 
+            transition: all 0.3s; font-family: inherit; 
+        }
+        .nav-btn:hover { background: #4b5563; }
+        .nav-btn.active { background: #f59e0b; color: #fff; } /* Laranja Visita */
+        .nav-btn.logout { background: #dc2626; color: #fff; margin-left: auto; }
+        .nav-btn.logout:hover { background: #ef4444; }
+        /* --- FIM DA NAV --- */
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .form-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            border-radius: 16px;
+            padding: 30px;
+            border: 2px solid #374151;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #9ca3af;
+            font-weight: bold;
+        }
+        .input-field {
+            width: 100%;
+            background: #374151;
+            color: #fff;
+            border: 2px solid #4b5563;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .checkbox-group {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .checkbox-item {
+            background: #374151;
+            padding: 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .checkbox-item input {
+            width: 18px;
+            height: 18px;
+        }
+
+        .upload-group {
+            background: #374151;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px dashed #4b5563;
+        }
+        .upload-group label {
+            color: #9ca3af;
+        }
+        .upload-group input[type="file"]:disabled {
+            cursor: not-allowed;
+        }
+        /* Mensagem de "Inativo" */
+        .inactive-msg {
+            font-size: 0.85rem;
+            color: #f59e0b; /* Laranja */
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .btn-save {
+            width: 100%;
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        .btn-save:hover {
+            background: #059669;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div class="admin-nav">
+        <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
+        <a href="produtos.html" class="nav-btn">📦 Produtos</a>
+        <a href="clientes.html" class="nav-btn">👥 Clientes</a>
+        <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
+        <a href="servicos_do_dia.html" class="nav-btn">📋 Serviços do Dia</a>
+        <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
+        <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
+        <a href="ficha_visita.html" class="nav-btn active">📝 Ficha de Visita</a>
+        <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📝 Registrar Ficha de Visita</h1>
+        </div>
+
+        <div class="form-container">
+            <form id="visita-form">
+                
+                <div class="input-group">
+                    <label for="select-cliente">1. Cliente</label>
+                    <select id="select-cliente" class="input-field" required>
+                        <option value="">Carregando clientes...</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="visita-data">2. Data da Visita</label>
+                    <input type="date" id="visita-data" class="input-field" required>
+                </div>
+
+                <div class="input-group">
+                    <label>3. Parâmetros da Água</label>
+                    <div class="grid-3">
+                        <input type="text" id="visita-ph" class="input-field" placeholder="pH (ex: 7.2)">
+                        <input type="text" id="visita-alcalinidade" class="input-field" placeholder="Alcalinidade (ex: 80)">
+                        <input type="text" id="visita-cloro" class="input-field" placeholder="Cloro (ex: 1.5)">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>4. Serviços Realizados</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="servico" value="Aspiração"> Aspiração
+                        </label>
+                         <label class="checkbox-item">
+                            <input type="checkbox" name="servico" value="Escovação"> Escovação
+                        </label>
+                         <label class="checkbox-item">
+                            <input type="checkbox" name="servico" value="Limpeza de Bordas"> Limpeza de Bordas
+                        </label>
+                         <label class="checkbox-item">
+                            <input type="checkbox" name="servico" value="Peneiração"> Peneiração
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="servico" value="Limpeza Filtro"> Limpeza Filtro
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="servico" value="Retrolavagem"> Retrolavagem
+                        </label>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="visita-obs">5. Observações</label>
+                    <textarea id="visita-obs" class="input-field" rows="3" placeholder="Ex: Adicionado 500g de cloro, 1L de algicida..."></textarea>
+                </div>
+                
+                <div class="input-group upload-group">
+                    <label>6. Fotos (Antes e Depois)</label>
+                    
+                    <div style="margin-top: 10px;">
+                        <label for="foto-antes" style="color: #fff;">Foto ANTES:</label>
+                        <input type="file" id="foto-antes" class="input-field" disabled>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <label for="foto-depois" style="color: #fff;">Foto DEPOIS:</label>
+                        <input type="file" id="foto-depois" class="input-field" disabled>
+                    </div>
+                    
+                    <p class="inactive-msg">
+                        ⚠️ Upload de fotos inativo. 
+                        <br>
+                        Libere o "Firebase Storage" no seu projeto para ativar.
+                    </p>
+                </div>
+
+                <button type="submit" class="btn-save" id="btn-save">Salvar Visita</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+        // Vamos precisar do 'getStorage' DEPOIS, mas por enquanto não.
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
+            authDomain: "tomazela-piscinas.firebaseapp.com",
+            databaseURL: "https://tomazela-piscinas-default-rtdb.firebaseio.com", 
+            projectId: "tomazela-piscinas",
+            storageBucket: "tomazela-piscinas.firebasestorage.app", // Mesmo inativo, o config fica
+            messagingSenderId: "776818671387",
+            appId: "1:776818671387:web:ca4211e6fa8f3f1c889dbe",
+            measurementId: "G-PP230KYC4X"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        
+        // Referências
+        const clientesRef = ref(database, 'clientes');
+        const visitasRef = ref(database, 'visitas'); // ⭐ ONDE VAMOS SALVAR
+
+        
+        // --- VIGIA E LOGOUT ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                initPage();
+            } else {
+                window.location.href = 'login_piscina.html';
+            }
+        });
+        
+        const logoutBtn = document.getElementById('logout-btn');
+        logoutBtn.addEventListener('click', () => {
+            if (confirm("Tem certeza que deseja sair?")) {
+                signOut(auth);
+            }
+        });
+        
+        // --- INICIALIZAÇÃO ---
+        async function initPage() {
+            // Seta a data de hoje no campo de data
+            document.getElementById('visita-data').value = new Date().toISOString().split('T')[0];
+            
+            await carregarClientes();
+            
+            document.getElementById('visita-form').addEventListener('submit', salvarVisita);
+        }
+
+        async function carregarClientes() {
+            const select = document.getElementById('select-cliente');
+            try {
+                const snapshot = await get(clientesRef);
+                if (snapshot.exists()) {
+                    select.innerHTML = '<option value="">--- Selecione um cliente ---</option>';
+                    let clientes = [];
+                    snapshot.forEach(child => {
+                        clientes.push({ id: child.key, ...child.val() });
+                    });
+                    
+                    // Ordena por nome
+                    clientes.sort((a, b) => a.nome.localeCompare(b.nome));
+                    
+                    clientes.forEach(cli => {
+                        const option = new Option(`${cli.nome} (${cli.enderecoRua}, ${cli.enderecoNum})`, cli.id);
+                        option.dataset.nome = cli.nome; // Guarda o nome
+                        select.add(option);
+                    });
+                } else {
+                    select.innerHTML = '<option value="">Nenhum cliente cadastrado</option>';
+                }
+            } catch (e) {
+                console.error("Erro ao carregar clientes: ", e);
+                select.innerHTML = '<option value="">Erro ao carregar</option>';
+            }
+        }
+        
+        async function salvarVisita(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save');
+            btn.disabled = true;
+            btn.textContent = 'Salvando...';
+            
+            const selectCliente = document.getElementById('select-cliente');
+            const clienteId = selectCliente.value;
+            const clienteNome = selectCliente.options[selectCliente.selectedIndex].dataset.nome;
+            
+            if (!clienteId) {
+                alert("Por favor, selecione um cliente.");
+                btn.disabled = false;
+                btn.textContent = 'Salvar Visita';
+                return;
+            }
+            
+            // Pega os serviços marcados
+            const servicosRealizados = [];
+            document.querySelectorAll('input[name="servico"]:checked').forEach(checkbox => {
+                servicosRealizados.push(checkbox.value);
+            });
+            
+            const visitaData = {
+                clienteId: clienteId,
+                clienteNome: clienteNome,
+                dataVisita: document.getElementById('visita-data').value,
+                ph: document.getElementById('visita-ph').value,
+                alcalinidade: document.getElementById('visita-alcalinidade').value,
+                cloro: document.getElementById('visita-cloro').value,
+                servicos: servicosRealizados,
+                observacoes: document.getElementById('visita-obs').value,
+                fotoAntesUrl: null, // Ficará nulo por enquanto
+                fotoDepoisUrl: null // Ficará nulo por enquanto
+            };
+            
+            try {
+                await push(visitasRef, visitaData);
+                alert("Visita salva com sucesso!");
+                document.getElementById('visita-form').reset();
+                // Reseta a data para hoje
+                document.getElementById('visita-data').value = new Date().toISOString().split('T')[0];
+            } catch (e) {
+                console.error("Erro ao salvar visita: ", e);
+                alert("Erro ao salvar a visita. Tente novamente.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Salvar Visita';
+            }
+        }
+
+    </script>
+</body>
+</html>

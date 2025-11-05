@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel - Admin Piscina</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom, #004e92 0%, #000428 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .admin-nav {
+            background: #111827;
+            padding: 12px 20px;
+            border-bottom: 2px solid #007bff;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            background: #374151; color: #f3f4f6; border: none;
+            padding: 10px 15px; border-radius: 8px; font-weight: bold;
+            font-size: 0.9rem; cursor: pointer; text-decoration: none; 
+            transition: all 0.3s; font-family: inherit; 
+        }
+        .nav-btn:hover { background: #4b5563; }
+        .nav-btn.active { background: #007bff; color: #fff; }
+        .nav-btn.logout { background: #dc2626; color: #fff; margin-left: auto; }
+        .nav-btn.logout:hover { background: #ef4444; }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5rem; color: #fff; }
+        .header p { font-size: 1.1rem; color: #9ca3af; }
+
+        .grid-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .menu-card {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            border-radius: 16px;
+            padding: 25px;
+            text-decoration: none;
+            color: #fff;
+            border: 2px solid #374151;
+            transition: all 0.3s;
+        }
+        .menu-card:hover {
+            border-color: #007bff;
+            transform: translateY(-5px);
+        }
+        .menu-card h2 {
+            font-size: 1.5rem;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .menu-card p {
+            font-size: 1rem;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+
+<div class="admin-nav">
+    <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
+    <a href="produtos.html" class="nav-btn">📦 Produtos</a>
+    <a href="clientes.html" class="nav-btn">👥 Clientes</a>
+    <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
+    <a href="servicos_do_dia.html" class="nav-btn">📋 Serviços do Dia</a>
+    <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
+    <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
+    <a href="recebimentos.html" class="nav-btn">💰 Recebimentos</a> 
+    <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
+    <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
+</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Painel de Controle</h1>
+            <p>Gerenciamento de Clientes, Produtos e Serviços - Tomazela Piscinas</p>
+        </div>
+
+        <div class="grid-menu">
+            <a href="produtos.html" class="menu-card">
+                <h2>📦 Cadastro de Produtos</h2>
+                <p>Adicionar ou editar cloro, algicida, clarificante e outros itens.</p>
+            </a>
+            <a href="clientes.html" class="menu-card">
+                <h2>👥 Cadastro de Clientes</h2>
+                <p>Gerenciar clientes, endereços e o valor da mensalidade de cada um.</p>
+            </a>
+            <a href="pdv_piscina.html" class="menu-card">
+                <h2>✍️ PDV (Ponto de Venda)</h2>
+                <p>Lançar uma venda avulsa ou um serviço manual (visita, limpeza, etc).</p>
+            </a>
+            <a href="servicos_do_dia.html" class="menu-card">
+                <h2>📋 Serviços do Dia</h2>
+                <p>Ver as "notinhas" de serviços a serem feitos (como a "cozinha").</p>
+            </a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+        import { getDatabase } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
+        // SUA MESMA CONFIGURAÇÃO (com o databaseURL)
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
+            authDomain: "tomazela-piscinas.firebaseapp.com",
+            databaseURL: "https://tomazela-piscinas-default-rtdb.firebaseio.com", // A URL que você pegou
+            projectId: "tomazela-piscinas",
+            storageBucket: "tomazela-piscinas.firebasestorage.app",
+            messagingSenderId: "776818671387",
+            appId: "1:776818671387:web:ca4211e6fa8f3f1c889dbe",
+            measurementId: "G-PP230KYC4X"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        // O database é importado mas não é usado aqui (só nas outras páginas)
+
+        // Vigia de Autenticação (Proteção da Página)
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                // Se não estiver logado, chuta ele para a página de login
+                window.location.href = 'login_piscina.html';
+            }
+        });
+
+        // Lógica do Botão Sair
+        const logoutBtn = document.getElementById('logout-btn');
+        logoutBtn.addEventListener('click', () => {
+            if (confirm("Tem certeza que deseja sair?")) {
+                signOut(auth).then(() => {
+                    // O vigia (onAuthStateChanged) vai pegar essa mudança e redirecionar
+                }).catch((error) => {
+                    console.error("Erro ao sair: ", error);
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>
