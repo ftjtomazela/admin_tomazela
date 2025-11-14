@@ -1,643 +1,331 @@
-
 <html lang="pt-BR">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>PDV - Admin Piscina</title>
-
+    <title>✍️ PDV - Admin Piscina</title>
     <style>
-
-        /* (Seu CSS está 100% igual, sem mudanças) */
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
-
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-
             background: linear-gradient(to bottom, #004e92 0%, #000428 100%);
-
             color: #ffffff;
-
             min-height: 100vh;
-
         }
-
         .admin-nav {
-
             background: #111827;
-
             padding: 12px 20px;
-
             margin-bottom: 20px;
-
             border-bottom: 2px solid #007bff;
-
             display: flex;
-
             gap: 10px;
-
             align-items: center;
-
             flex-wrap: wrap;
-
         }
-
         .nav-btn {
-
             background: #374151; color: #f3f4f6; border: none;
-
             padding: 10px 15px; border-radius: 8px; font-weight: bold;
-
             font-size: 0.9rem; cursor: pointer; text-decoration: none;
-
             transition: all 0.3s; font-family: inherit;
-
         }
-
         .nav-btn:hover { background: #4b5563; }
-
-        .nav-btn.active { background: #007bff; color: #fff; } /* Azul Ativo */
-
+        .nav-btn.active { background: #007bff; color: #fff; } 
         .nav-btn.logout { background: #dc2626; color: #fff; margin-left: auto; }
-
         .nav-btn.logout:hover { background: #ef4444; }
 
-
-
         .container {
-
             max-width: 1400px;
-
             margin: 0 auto;
-
             padding: 0 20px 20px 20px;
-
         }
-
         h1 {
-
             text-align: center;
-
             color: #fff;
-
             margin-bottom: 25px;
-
             font-size: 2.5rem;
-
         }
-
         .pdv-grid {
-
             display: grid;
-
-            grid-template-columns: 1fr; /* 1 coluna mobile */
-
+            grid-template-columns: 1fr; 
             gap: 20px;
-
         }
-
         @media (min-width: 768px) {
-
-            .pdv-grid { grid-template-columns: 1fr 1fr; } /* 2 colunas tablet */
-
+            .pdv-grid { grid-template-columns: 1fr 1fr; } 
         }
-
         @media (min-width: 1200px) {
-
-            .pdv-grid { grid-template-columns: 1fr 1fr 1fr; } /* 3 colunas desktop */
-
+            .pdv-grid { grid-template-columns: 1fr 1fr 1fr; } 
         }
-
-
 
         .pdv-coluna {
-
             background: linear-gradient(145deg, #2d3748, #1a202c);
-
             border-radius: 16px;
-
             padding: 20px;
-
             border: 2px solid #374151;
-
             max-height: 80vh;
-
             display: flex;
-
             flex-direction: column;
-
         }
-
         .pdv-coluna h2 {
-
             font-size: 1.5rem;
-
             color: #007bff;
-
             margin-bottom: 15px;
-
             border-bottom: 1px solid #4b5563;
-
             padding-bottom: 10px;
-
         }
-
-       
-
-        .cardapio-scroll {
-
-            overflow-y: auto;
-
-            flex: 1;
-
-        }
-
+        
+        .cardapio-scroll { overflow-y: auto; flex: 1; }
         .item-cardapio {
-
-            background: #374151;
-
-            padding: 12px 15px;
-
-            border-radius: 10px;
-
-            margin-bottom: 10px;
-
-            display: flex;
-
-            justify-content: space-between;
-
-            align-items: center;
-
-            cursor: pointer;
-
-            transition: all 0.3s;
-
+            background: #374151; padding: 12px 15px; border-radius: 10px;
+            margin-bottom: 10px; display: flex; justify-content: space-between;
+            align-items: center; cursor: pointer; transition: all 0.3s;
         }
+        .item-cardapio:hover { background: #4b5563; }
+        .item-cardapio span { font-size: 1rem; font-weight: 500; }
+        .item-cardapio .preco { font-weight: bold; color: #10b981; } 
 
-        .item-cardapio:hover {
-
-            background: #4b5563;
-
-        }
-
-        .item-cardapio span {
-
-            font-size: 1rem;
-
-            font-weight: 500;
-
-        }
-
-        .item-cardapio .preco {
-
-            font-weight: bold;
-
-            color: #10b981; /* Verde */
-
-        }
-
-
-
-        .carrinho-scroll {
-
-            overflow-y: auto;
-
-            flex: 1;
-
-            min-height: 200px;
-
-        }
-
+        .carrinho-scroll { overflow-y: auto; flex: 1; min-height: 200px; }
         .carrinho-item {
-
-            background: #374151;
-
-            padding: 12px 15px;
-
-            border-radius: 10px;
-
-            margin-bottom: 10px;
-
-            display: flex;
-
-            gap: 10px;
-
-            align-items: center;
-
+            background: #374151; padding: 12px 15px; border-radius: 10px;
+            margin-bottom: 10px; display: flex; gap: 10px; align-items: center;
         }
-
-       
-
+        
         .carrinho-item-qty {
-
-            display: flex;
-
-            align-items: center;
-
-            background: #2d3748;
-
-            border-radius: 6px;
-
-            padding: 2px;
-
+            display: flex; align-items: center; background: #2d3748;
+            border-radius: 6px; padding: 2px;
         }
-
         .qty-btn {
-
-            background: #007bff;
-
-            color: #fff;
-
-            border: none;
-
-            width: 28px;
-
-            height: 28px;
-
-            font-size: 1.2rem;
-
-            font-weight: bold;
-
-            cursor: pointer;
-
+            background: #007bff; color: #fff; border: none; width: 28px;
+            height: 28px; font-size: 1.2rem; font-weight: bold; cursor: pointer;
             border-radius: 6px;
-
         }
-
-        .qty-display {
-
-            font-size: 1.1rem;
-
-            font-weight: bold;
-
-            padding: 0 10px;
-
-            min-width: 20px;
-
-            text-align: center;
-
-        }
-
-       
-
-        .carrinho-info {
-
-            flex: 1;
-
-        }
-
-        .carrinho-info .nome {
-
-            font-weight: bold;
-
-            font-size: 1.1rem;
-
-        }
-
-       
-
-        .carrinho-preco {
-
-            font-size: 0.9rem;
-
-            color: #9ca3af;
-
-            margin-top: 5px;
-
-        }
-
+        .qty-display { font-size: 1.1rem; font-weight: bold; padding: 0 10px; min-width: 20px; text-align: center; }
+        
+        .carrinho-info { flex: 1; }
+        .carrinho-info .nome { font-weight: bold; font-size: 1.1rem; }
+        
+        .carrinho-preco { font-size: 0.9rem; color: #9ca3af; margin-top: 5px; }
         .input-preco {
-
-            background: #4b5563;
-
-            color: #fff;
-
-            border: 1px solid #007bff;
-
-            border-radius: 6px;
-
-            padding: 5px;
-
-            font-size: 1rem;
-
-            font-weight: bold;
-
-            width: 100px;
-
-            font-family: inherit;
-
+            background: #4b5563; color: #fff; border: 1px solid #007bff;
+            border-radius: 6px; padding: 5px; font-size: 1rem; font-weight: bold;
+            width: 100px; font-family: inherit;
         }
-
-        .input-preco:focus {
-
-            outline: none;
-
-            background: #5e6c80;
-
-        }
-
-       
-
-        .carrinho-preco-total {
-
-             font-size: 1.1rem;
-
-            font-weight: bold;
-
-            color: #10b981;
-
-            text-align: right;
-
-        }
-
+        .input-preco:focus { outline: none; background: #5e6c80; }
+        
+        .carrinho-preco-total { font-size: 1.1rem; font-weight: bold; color: #10b981; text-align: right; }
         .btn-excluir {
-
-            background: #dc2626;
-
-            color: #fff;
-
-            border: none;
-
-            padding: 5px 10px;
-
-            border-radius: 8px;
-
-            font-weight: bold;
-
-            cursor: pointer;
-
-            margin-left: 5px;
-
+            background: #dc2626; color: #fff; border: none; padding: 5px 10px;
+            border-radius: 8px; font-weight: bold; cursor: pointer; margin-left: 5px;
         }
-
         #total-carrinho {
-
-            margin-top: 15px;
-
-            padding-top: 15px;
-
-            border-top: 2px solid #007bff;
-
-            font-size: 1.5rem;
-
-            font-weight: bold;
-
-            text-align: right;
-
+            margin-top: 15px; padding-top: 15px; border-top: 2px solid #007bff;
+            font-size: 1.5rem; font-weight: bold; text-align: right;
         }
-
-       
-
-        .form-scroll {
-
-            overflow-y: auto;
-
-            flex: 1;
-
-        }
-
+        
+        .form-scroll { overflow-y: auto; flex: 1; }
         .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-
         .input-group { display: flex; flex-direction: column; }
-
         .input-group label { margin-bottom: 8px; color: #9ca3af; font-weight: bold; }
-
         .input-field { background: #374151; color: #fff; border: 2px solid #4b5563; border-radius: 8px; padding: 12px; font-size: 1rem; font-family: inherit; }
-
         .input-field:focus { outline: none; border-color: #007bff; }
-
-       
-
+        
         #btn-enviar-manual {
-
-            width: 100%;
-
-            background: #10b981;
-
-            color: #fff;
-
-            border: none;
-
-            padding: 18px;
-
-            border-radius: 12px;
-
-            font-weight: bold;
-
-            font-size: 1.1rem;
-
-            cursor: pointer;
-
-            transition: all 0.3s;
-
+            width: 100%; background: #10b981; color: #fff; border: none;
+            padding: 18px; border-radius: 12px; font-weight: bold;
+            font-size: 1.1rem; cursor: pointer; transition: all 0.3s;
             margin-top: 20px;
-
         }
-
-        #btn-enviar-manual:disabled {
-
-            background: #4b5563; color: #9ca3af; cursor: not-allowed;
-
-        }
-
+        #btn-enviar-manual:disabled { background: #4b5563; color: #9ca3af; cursor: not-allowed; }
     </style>
-
 </head>
 
 <body>
 <div class="admin-nav">
-    <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
-    <a href="produtos.html" class="nav-btn">📦 Produtos</a>
-    <a href="clientes.html" class="nav-btn">👥 Clientes</a>
-    <a href="pdv_piscina.html" class="nav-btn active">✍️ PDV</a>
-    <a href="servicos_do_dia.html" class="nav-btn">📋 Serviços do Dia</a>
-    <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
-    <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
-    <a href="recebimentos.html" class="nav-btn">💰 Recebimentos</a> 
-    <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
-  	<button id="logout-btn" class="nav-btn logout">Sair ➔</button>
+    <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
+    <a href="produtos.html" class="nav-btn">📦 Produtos</a>
+    <a href="clientes.html" class="nav-btn">👥 Clientes</a>
+    <a href="pdv_piscina.html" class="nav-btn active">✍️ PDV</a>
+    <a href="servicos_do_dia.html" class="nav-btn">📋 Serviços do Dia</a>
+    <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
+    <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
+    <a href="recebimentos.html" class="nav-btn">💰 Recebimentos</a> 
+    <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
+    <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
 </div>
 
-  	<div class="container">
-      	<h1>✍️ PDV - Lançar Serviço/Venda</h1>
+    <div class="container">
+        <h1>✍️ PDV - Lançar Serviço/Venda</h1>
 
-      	<div class="pdv-grid">
-          	
-          	<div class="pdv-coluna" id="coluna-cardapio">
-              	<h2>1. Itens</h2>
-              	<div class="input-group" style="margin-bottom: 15px;">
+        <div class="pdv-grid">
+            
+            <div class="pdv-coluna" id="coluna-cardapio">
+                <h2>1. Itens</h2>
+                <div class="input-group" style="margin-bottom: 15px;">
                     <input type="text" id="search-item" class="input-field" placeholder="Buscar produto ou serviço..." onkeyup="filterProducts()">
                 </div>
-              	<div class="cardapio-scroll">
-                  	<h3 style="color:#007bff; margin: 15px 0 10px 0;">📦 Produtos</h3>
-                  	<div id="produtos-container">
-                      	<p>Carregando produtos...</p>
-                  	</div>
-                  	
-                  	<h3 style="color:#007bff; margin: 15px 0 10px 0;">🔧 Serviços Avulsos</h3>
-                  	<div id="servicos-container">
-                      	</div>
-              	</div>
-          	</div>
+                <div class="cardapio-scroll">
+                    <h3 style="color:#007bff; margin: 15px 0 10px 0;">📦 Produtos</h3>
+                    <div id="produtos-container">
+                        <p>Carregando produtos...</p>
+                    </div>
+                    
+                    <h3 style="color:#007bff; margin: 15px 0 10px 0;">🔧 Serviços Avulsos</h3>
+                    <div id="servicos-container">
+                        </div>
+                </div>
+            </div>
 
-          	<div class="pdv-coluna" id="coluna-carrinho">
-              	<h2>2. Pedido Atual</h2>
-              	<div class="carrinho-scroll" id="pedido-atual-container">
-                  	<p style="color: #9ca3af; text-align: center;">Selecione um cliente e adicione itens...</p>
-              	</div>
-              	<div id="total-carrinho">
-                  	Total: R$ 0,00
-              	</div>
-          	</div>
+            <div class="pdv-coluna" id="coluna-carrinho">
+                <h2>2. Pedido Atual</h2>
+                <div class="carrinho-scroll" id="pedido-atual-container">
+                    <p style="color: #9ca3af; text-align: center;">Selecione um cliente e adicione itens...</p>
+                </div>
+                <div id="total-carrinho">
+                    Total: R$ 0,00
+                </div>
+            </div>
 
-          	<div class="pdv-coluna" id="coluna-cliente">
-              	<h2>3. Cliente e Fechamento</h2>
-              	<div class="form-scroll">
-                  	<form id="form-manual">
-                      	<div class="input-group">
-                          	<label for="search-cliente">Buscar Cliente</label>
+            <div class="pdv-coluna" id="coluna-cliente">
+                <h2>3. Cliente e Fechamento</h2>
+                <div class="form-scroll">
+                    <form id="form-manual">
+                        <div class="input-group">
+                            <label for="search-cliente">Buscar Cliente</label>
                             <input type="text" id="search-cliente" class="input-field" placeholder="Digite o nome do cliente..." onkeyup="filterClients()">
                         </div>
-                      	<div class="input-group">
-                          	<label for="select-cliente">1. Selecionar Cliente</label>
-                          	<select id="select-cliente" class="input-field" onchange="preencherCliente()">
-                              	<option value="">--- Selecione um cliente ---</option>
-                              	</select>
-                      	</div>
-                      	
-                      	<h3 style="color:#007bff; margin: 20px 0 10px 0;">2. Dados (Automático)</h3>
-                      	<div class="input-group">
-                          	<label for="cliente-nome">Nome</label>
-                          	<input type="text" id="cliente-nome" class="input-field" disabled>
-                      	</div>
-                      	<div class="input-group" style="margin-top: 15px;">
-                          	<label for="cliente-endereco">Endereço</label>
-                          	<input type="text" id="cliente-endereco" class="input-field" disabled>
-                      	</div>
-                      	
-                      	<h3 style="color:#007bff; margin: 20px 0 10px 0;">3. Pagamento</h3>
-                      	<div class="form-grid">
-                          	<div class="input-group">
-                              	<label for="pagamento">Forma</label>
-                              	<select id="pagamento" class="input-field" onchange="toggleTroco(this.value)">
-                                  	<option value="pix">PIX</option>
-                                  	<option value="credito">Crédito</option>
-                                  	<option value="debito">Débito</option>
-                                  	<option value="dinheiro">Dinheiro</option>
-                                  	<option value="mensalidade">Lançar na Mensalidade</option>
-                              	</select>
-                          	</div>
-                          	<div class="input-group" id="troco-section" style="display: none;">
-                              	<label for="troco-valor">Troco para?</label>
-                              	<input type="text" id="troco-valor" class="input-field" placeholder="Ex: 50">
-                          	</div>
-                      	</div>
-                      	
-                      	<button type="submit" id="btn-enviar-manual">Lançar Serviço/Venda</button>
-                  	</form>
-              	</div>
-          	</div>
+                        <div class="input-group">
+                            <label for="select-cliente">1. Selecionar Cliente</label>
+                            <select id="select-cliente" class="input-field" onchange="preencherCliente()">
+                                <option value="">--- Selecione um cliente ---</option>
+                                </select>
+                        </div>
+                        
+                        <h3 style="color:#007bff; margin: 20px 0 10px 0;">2. Dados (Automático)</h3>
+                        <div class="input-group">
+                            <label for="cliente-nome">Nome</label>
+                            <input type="text" id="cliente-nome" class="input-field" disabled>
+                        </div>
+                        <div class="input-group" style="margin-top: 15px;">
+                            <label for="cliente-endereco">Endereço</label>
+                            <input type="text" id="cliente-endereco" class="input-field" disabled>
+                        </div>
+                        
+                        <h3 style="color:#007bff; margin: 20px 0 10px 0;">3. Pagamento</h3>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="pagamento">Forma</label>
+                                <select id="pagamento" class="input-field" onchange="toggleTroco(this.value)">
+                                    <option value="pix">PIX</option>
+                                    <option value="credito">Crédito</option>
+                                    <option value="debito">Débito</option>
+                                    <option value="dinheiro">Dinheiro</option>
+                                    <option value="mensalidade">Lançar na Mensalidade</option>
+                                </select>
+                            </div>
+                            <div class="input-group" id="troco-section" style="display: none;">
+                                <label for="troco-valor">Troco para?</label>
+                                <input type="text" id="troco-valor" class="input-field" placeholder="Ex: 50">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" id="btn-enviar-manual">Lançar Serviço/Venda</button>
+                    </form>
+                </div>
+            </div>
 
-      	</div>
-  	</div>
+        </div>
+    </div>
 
 <script type="module">
-  	import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-  	import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
-  	import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-  	
-  	const firebaseConfig = {
-      	apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
-      	authDomain: "tomazela-piscinas.firebaseapp.com",
-      	databaseURL: "https://tomazela-piscinas-default-rtdb.firebaseio.com", 
-      	projectId: "tomazela-piscinas",
-      	storageBucket: "tomazela-piscinas.firebasestorage.app",
-      	messagingSenderId: "776818671387",
-      	appId: "1:776818671387:web:ca4211e6fa8f3f1c889dbe",
-      	measurementId: "G-PP230KYC4X"
-  	};
-  	
-  	const app = initializeApp(firebaseConfig);
-  	const database = getDatabase(app);
-  	const auth = getAuth(app);
-  	
-  	const produtosRef = ref(database, 'produtos');
-  	const clientesRef = ref(database, 'clientes');
-  	const pedidosRef = ref(database, 'servicos'); 
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
+        authDomain: "tomazela-piscinas.firebaseapp.com",
+        databaseURL: "https://tomazela-piscinas-default-rtdb.firebaseio.com", 
+        projectId: "tomazela-piscinas",
+        storageBucket: "tomazela-piscinas.firebasestorage.app",
+        messagingSenderId: "776818671387",
+        appId: "1:776818671387:web:ca4211e6fa8f3f1c889dbe",
+        measurementId: "G-PP230KYC4X"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const auth = getAuth(app);
+    
+    const produtosRef = ref(database, 'produtos');
+    const clientesRef = ref(database, 'clientes');
+    const pedidosPendentesRef = ref(database, 'pedidos_pendentes'); // PDV PENDENTE
 
-  	const servicos_avulsos = [
-      	{ id: 's0', nome: 'Cobrança de Mensalidade', preco: 0.00 },
-      	{ id: 's1', nome: 'Visita Técnica', preco: 80.00 }, 
-      	{ id: 's2', nome: 'Limpeza Avulsa', preco: 120.00 }, 
-      	{ id: 's3', nome: 'Troca de Areia', preco: 250.00 }, 
-      	{ id: 's4', nome: 'Tratamento de Choque', preco: 150.00 }
-  	];
+    const servicos_avulsos = [
+        { id: 's0', nome: 'Cobrança de Mensalidade', preco: 0.00 },
+        { id: 's1', nome: 'Visita Técnica', preco: 80.00 }, 
+        { id: 's2', nome: 'Limpeza Avulsa', preco: 120.00 }, 
+        { id: 's3', nome: 'Troca de Areia', preco: 250.00 }, 
+        { id: 's4', nome: 'Tratamento de Choque', preco: 150.00 }
+    ];
 
-  	// --- VARIÁVEIS GLOBAIS (AGORA USADAS PARA PESQUISA) ---
-  	var carrinho = [];
-  	var produtos_db = []; // Produtos do Firebase
-  	var clientes_db = []; // Clientes do Firebase
-    var todos_produtos_e_servicos = []; // Lista unificada para busca
-  	var clienteSelecionado = null;
-  	
-  	
-  	// --- VIGIA E LOGOUT ---
-  	onAuthStateChanged(auth, (user) => {
-      	if (!user) {
-          	window.location.href = 'login_piscina.html';
-      	} else {
-          	initPage();
-      	}
-  	});
-  	
-  	const logoutBtn = document.getElementById('logout-btn');
-  	logoutBtn.addEventListener('click', () => {
-      	if (confirm("Tem certeza que deseja sair?")) {
-          	signOut(auth);
-      	}
-  	});
-  	
-  	function initPage() {
-      	carregarDadosDoFirebase();
-      	document.getElementById('select-cliente').addEventListener('change', preencherCliente);
-      	document.getElementById('form-manual').addEventListener('submit', enviarPedido);
-  	}
+    // --- VARIÁVEIS GLOBAIS ---
+    var carrinho = [];
+    var produtos_db = [];
+    var clientes_db = [];
+    var todos_produtos_e_servicos = []; 
+    var clienteSelecionado = null;
+    
+    
+    // --- VIGIA E LOGOUT ---
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            window.location.href = 'login_piscina.html';
+        } else {
+            initPage();
+        }
+    });
+    
+    const logoutBtn = document.getElementById('logout-btn');
+    logoutBtn.addEventListener('click', () => {
+        if (confirm("Tem certeza que deseja sair?")) {
+            signOut(auth);
+        }
+    });
+    
+    function initPage() {
+        carregarDadosDoFirebase();
+        document.getElementById('select-cliente').addEventListener('change', preencherCliente);
+        document.getElementById('form-manual').addEventListener('submit', enviarPedido);
+    }
 
-  	// --- CARREGAR DADOS DO FIREBASE ---
-    	
-  	async function carregarDadosDoFirebase() {
-      	try {
-          	const [produtosSnap, clientesSnap] = await Promise.all([
-              	get(produtosRef),
-              	get(clientesRef)
-          	]);
+    // --- CARREGAR DADOS DO FIREBASE ---
+        
+    async function carregarDadosDoFirebase() {
+        try {
+            const [produtosSnap, clientesSnap] = await Promise.all([
+                get(produtosRef),
+                get(clientesRef)
+            ]);
 
-          	// Processa Produtos
-          	produtos_db = [];
-          	if (produtosSnap.exists()) {
-              	produtosSnap.forEach(child => {
-                  	const item = child.val();
-                  	if (!item.pausado) {
-                      	item.id = child.key; 
-                      	produtos_db.push(item);
-                  	}
-              	});
-          	}
-          	
-          	// Processa Clientes
-          	clientes_db = [];
-          	if (clientesSnap.exists()) {
-              	clientesSnap.forEach(child => {
-                  	const item = child.val();
-                  	item.id = child.key; 
-                  	clientes_db.push(item);
-              	});
-          	}
+            // Processa Produtos
+            produtos_db = [];
+            if (produtosSnap.exists()) {
+                produtosSnap.forEach(child => {
+                    const item = child.val();
+                    if (!item.pausado) {
+                        item.id = child.key; 
+                        produtos_db.push(item);
+                    }
+                });
+            }
+            
+            // Processa Clientes
+            clientes_db = [];
+            if (clientesSnap.exists()) {
+                clientesSnap.forEach(child => {
+                    const item = child.val();
+                    item.id = child.key; 
+                    clientes_db.push(item);
+                });
+            }
             
             // Unifica todos os itens para busca
             todos_produtos_e_servicos = [
@@ -645,35 +333,31 @@
                 ...servicos_avulsos.map(s => ({ ...s, tipo: 'servico' }))
             ].sort((a, b) => a.nome.localeCompare(b.nome));
 
-          	renderizarListas();
+            renderizarListas();
 
-      	} catch (error) {
-          	console.error("Erro ao carregar dados:", error);
-          	alert("ERRO: Não foi possível carregar os dados do Firebase.");
-      	}
-  	}
-  	
-  	// --- RENDERIZAÇÃO INICIAL (APENAS FILTRA E CHAMA AS FUNÇÕES DEDICADAS) ---
-  	function renderizarListas() {
+        } catch (error) {
+            console.error("Erro ao carregar dados:", error);
+            alert("ERRO: Não foi possível carregar os dados do Firebase.");
+        }
+    }
+    
+    // --- RENDERIZAÇÃO INICIAL E FILTROS (Mantido) ---
+    function renderizarListas() {
         clientes_db.sort((a, b) => a.nome.localeCompare(b.nome));
         renderClientsSelect(clientes_db);
         renderItemsContainers(todos_produtos_e_servicos);
-  	}
+    }
     
-    // --- LÓGICA DE FILTRO DE CLIENTES ---
-    
-    // Função auxiliar para renderizar o SELECT do cliente
     function renderClientsSelect(clientList) {
-      	const clientesSelect = document.getElementById('select-cliente');
-      	// Mantém a opção de placeholder
-      	for (let i = clientesSelect.options.length - 1; i >= 1; i--) {
-          	clientesSelect.remove(i);
-      	}
-      	clientList.forEach(item => {
+        const clientesSelect = document.getElementById('select-cliente');
+        for (let i = clientesSelect.options.length - 1; i >= 1; i--) {
+            clientesSelect.remove(i);
+        }
+        clientList.forEach(item => {
             const endereco = item.enderecoRua && item.enderecoNum ? ` (${item.enderecoRua}, ${item.enderecoNum})` : '';
-          	const option = new Option(`${item.nome}${endereco}`, item.id);
-          	clientesSelect.add(option);
-      	});
+            const option = new Option(`${item.nome}${endereco}`, item.id);
+            clientesSelect.add(option);
+        });
     }
 
     window.filterClients = function() {
@@ -684,18 +368,14 @@
         );
         
         renderClientsSelect(filteredList);
-        // ⭐ ATUALIZAÇÃO: Se a lista filtrada tiver apenas 1 resultado, seleciona-o
         if (filteredList.length === 1) {
             document.getElementById('select-cliente').value = filteredList[0].id;
         } else {
-             document.getElementById('select-cliente').value = ""; // Limpa se houver múltiplos
+             document.getElementById('select-cliente').value = "";
         }
-        preencherCliente(); // Atualiza os dados do cliente selecionado no formulário
+        preencherCliente();
     }
 
-    // --- LÓGICA DE FILTRO DE ITENS ---
-    
-    // Função auxiliar para renderizar as caixas de Produtos e Serviços
     function renderItemsContainers(itemList) {
         const produtosContainer = document.getElementById('produtos-container');
         const servicosContainer = document.getElementById('servicos-container');
@@ -706,8 +386,7 @@
         const produtosFiltrados = itemList.filter(item => item.tipo === 'produto');
         const servicosFiltrados = itemList.filter(item => item.tipo === 'servico');
 
-        // Renderiza Produtos
-        if (produtosFiltrados.length === 0 && itemList.length > 0) { // Mostra só se a busca não achar produtos
+        if (produtosFiltrados.length === 0 && itemList.length > 0) {
             produtosContainer.innerHTML = '<p style="color: #9ca3af;">Nenhum produto encontrado.</p>';
         } else if (produtosFiltrados.length > 0) {
             produtosFiltrados.forEach(item => {
@@ -720,8 +399,7 @@
             });
         }
 
-        // Renderiza Serviços
-        if (servicosFiltrados.length === 0 && itemList.length > 0) { // Mostra só se a busca não achar serviços
+        if (servicosFiltrados.length === 0 && itemList.length > 0) {
             servicosContainer.innerHTML = '<p style="color: #9ca3af;">Nenhum serviço avulso encontrado.</p>';
         } else if (servicosFiltrados.length > 0) {
             servicosFiltrados.forEach(item => {
@@ -746,227 +424,218 @@
         renderItemsContainers(filteredList);
     }
 
-  	
-  	// --- PREENCHER DADOS DO CLIENTE (Mantido) ---
-  	function preencherCliente() {
-      	const clienteId = document.getElementById('select-cliente').value;
-      	if (!clienteId) {
-          	document.getElementById('cliente-nome').value = '';
-          	document.getElementById('cliente-endereco').value = '';
-          	clienteSelecionado = null;
-          	return;
-      	}
-      	
-      	clienteSelecionado = clientes_db.find(c => c.id === clienteId);
-      	
-      	document.getElementById('cliente-nome').value = clienteSelecionado.nome;
-      	let enderecoCompleto = `${clienteSelecionado.enderecoRua || ''}, ${clienteSelecionado.enderecoNum || 'S/N'} - ${clienteSelecionado.enderecoBairro || ''}`;
-      	document.getElementById('cliente-endereco').value = enderecoCompleto;
-  	}
+    // --- PREENCHER DADOS DO CLIENTE (Mantido) ---
+    function preencherCliente() {
+        const clienteId = document.getElementById('select-cliente').value;
+        if (!clienteId) {
+            document.getElementById('cliente-nome').value = '';
+            document.getElementById('cliente-endereco').value = '';
+            clienteSelecionado = null;
+            return;
+        }
+        
+        clienteSelecionado = clientes_db.find(c => c.id === clienteId);
+        
+        document.getElementById('cliente-nome').value = clienteSelecionado.nome;
+        let enderecoCompleto = `${clienteSelecionado.enderecoRua || ''}, ${clienteSelecionado.enderecoNum || 'S/N'} - ${clienteSelecionado.enderecoBairro || ''}`;
+        document.getElementById('cliente-endereco').value = enderecoCompleto;
+    }
 
-  	// --- LÓGICA DO CARRINHO (Mantido) ---
-  	
-  	function renderizarCarrinho() {
-      	const container = document.getElementById('pedido-atual-container');
-      	let subtotal = 0;
-      	
-      	if (carrinho.length === 0) {
-          	container.innerHTML = '<p style="color: #9ca3af; text-align: center;">Adicione itens...</p>';
-      	} else {
-          	container.innerHTML = '';
-          	carrinho.forEach((item, index) => {
-              	subtotal += (item.precoTotal * item.quantidade);
-              	
-              	container.innerHTML += `
-                  	<div class="carrinho-item">
-                      	<div class="carrinho-item-qty">
-                          	<button type="button" class="qty-btn" onclick="diminuirQuantidade(${index})">-</button>
-                          	<span class="qty-display">${item.quantidade}</span>
-                          	<button type="button" class="qty-btn" onclick="aumentarQuantidade(${index})">+</button>
-                      	</div>
-                      	<div class="carrinho-info">
-                          	<div class="nome">${item.nome}</div>
-                          	<div class="carrinho-preco">
-                              	R$ <input type="number" step="0.01" class="input-preco" 
-                                      	value="${item.precoTotal.toFixed(2)}" 
-                                      	onchange="atualizarPreco(${index}, this.value)"> / un
-                          	</div>
-                t     	</div>
-                      	<span class="carrinho-preco-total">R$ ${(item.precoTotal * item.quantidade).toFixed(2)}</span>
-                      	<button type="button" class="btn-excluir" onclick="removerDoCarrinho(${index})">Excluir</button>
-                  	</div>
-              	`;
-          	});
-      	}
-      	
-      	document.getElementById('total-carrinho').textContent = `Total: R$ ${subtotal.toFixed(2)}`;
-  	}
-  	
-  	window.atualizarPreco = (index, novoPreco) => {
-      	const preco = parseFloat(novoPreco.replace(',', '.'));
-      	if (isNaN(preco) || preco < 0) {
-          	renderizarCarrinho(); 
-          	return;
-      	}
-      	carrinho[index].precoTotal = preco; 
-      	renderizarCarrinho(); 
-  	}
-  	
-  	window.aumentarQuantidade = (index) => {
-      	carrinho[index].quantidade++;
-      	renderizarCarrinho();
-  	}
-  	
-  	window.diminuirQuantidade = (index) => {
-      	carrinho[index].quantidade--;
-      	if (carrinho[index].quantidade <= 0) {
-          	removerDoCarrinho(index);
-      	} else {
-          	renderizarCarrinho();
-      	}
-  	}
-  	
-  	window.removerDoCarrinho = (index) => {
-      	carrinho.splice(index, 1);
-      	renderizarCarrinho();
-  	}
+    // --- LÓGICA DO CARRINHO (Mantido) ---
+    
+    function renderizarCarrinho() {
+        const container = document.getElementById('pedido-atual-container');
+        let subtotal = 0;
+        
+        if (carrinho.length === 0) {
+            container.innerHTML = '<p style="color: #9ca3af; text-align: center;">Adicione itens...</p>';
+        } else {
+            container.innerHTML = '';
+            carrinho.forEach((item, index) => {
+                subtotal += (item.precoTotal * item.quantidade);
+                
+                container.innerHTML += `
+                    <div class="carrinho-item">
+                        <div class="carrinho-item-qty">
+                            <button type="button" class="qty-btn" onclick="diminuirQuantidade(${index})">-</button>
+                            <span class="qty-display">${item.quantidade}</span>
+                            <button type="button" class="qty-btn" onclick="aumentarQuantidade(${index})">+</button>
+                        </div>
+                        <div class="carrinho-info">
+                            <div class="nome">${item.nome}</div>
+                            <div class="carrinho-preco">
+                                R$ <input type="number" step="0.01" class="input-preco" 
+                                         value="${item.precoTotal.toFixed(2)}" 
+                                         onchange="atualizarPreco(${index}, this.value)"> / un
+                            </div>
+                         </div>
+                        <span class="carrinho-preco-total">R$ ${(item.precoTotal * item.quantidade).toFixed(2)}</span>
+                        <button type="button" class="btn-excluir" onclick="removerDoCarrinho(${index})">Excluir</button>
+                    </div>
+                `;
+            });
+        }
+        
+        document.getElementById('total-carrinho').textContent = `Total: R$ ${subtotal.toFixed(2)}`;
+    }
+    
+    window.atualizarPreco = (index, novoPreco) => {
+        const preco = parseFloat(novoPreco.replace(',', '.'));
+        if (isNaN(preco) || preco < 0) {
+            renderizarCarrinho(); 
+            return;
+        }
+        carrinho[index].precoTotal = preco; 
+        renderizarCarrinho(); 
+    }
+    
+    window.aumentarQuantidade = (index) => {
+        carrinho[index].quantidade++;
+        renderizarCarrinho();
+    }
+    
+    window.diminuirQuantidade = (index) => {
+        carrinho[index].quantidade--;
+        if (carrinho[index].quantidade <= 0) {
+            removerDoCarrinho(index);
+        } else {
+            renderizarCarrinho();
+        }
+    }
+    
+    window.removerDoCarrinho = (index) => {
+        carrinho.splice(index, 1);
+        renderizarCarrinho();
+    }
 
-  	window.adicionarProduto = (id) => {
-      	const indexExistente = carrinho.findIndex(item => item.tipo === 'produto' && item.itemId === id);
-      	
-      	if (indexExistente > -1) {
-          	aumentarQuantidade(indexExistente);
-      	} else {
-          	const produto = produtos_db.find(p => p.id === id);
-          	carrinho.push({
-              	itemId: id, 
-              	tipo: 'produto',
-              	nome: produto.nome,
-              	precoTotal: produto.preco, 
-              	quantidade: 1
-          	});
-          	renderizarCarrinho();
-      	}
-  	}
+    window.adicionarProduto = (id) => {
+        const indexExistente = carrinho.findIndex(item => item.tipo === 'produto' && item.itemId === id);
+        
+        if (indexExistente > -1) {
+            aumentarQuantidade(indexExistente);
+        } else {
+            const produto = produtos_db.find(p => p.id === id);
+            carrinho.push({
+                itemId: id, 
+                tipo: 'produto',
+                nome: produto.nome,
+                precoTotal: produto.preco, 
+                quantidade: 1
+            });
+            renderizarCarrinho();
+        }
+    }
 
-  	window.adicionarServico = (id) => {
-      	const indexExistente = carrinho.findIndex(item => item.tipo === 'servico' && item.itemId === id);
+    window.adicionarServico = (id) => {
+        const indexExistente = carrinho.findIndex(item => item.tipo === 'servico' && item.itemId === id);
 
-      	if (indexExistente > -1) {
-          	aumentarQuantidade(indexExistente);
-      	} else {
-          	const servico = servicos_avulsos.find(s => s.id === id);
-source_id: "s0",
-          	carrinho.push({
-              	itemId: id,
-              	tipo: 'servico',
-              	nome: servico.nome,
-              	precoTotal: servico.preco, 
-source_id: "s0",
-              	quantidade: 1
-          	});
-          	renderizarCarrinho();
-      	}
-  	}
+        if (indexExistente > -1) {
+            aumentarQuantidade(indexExistente);
+        } else {
+            const servico = servicos_avulsos.find(s => s.id === id);
+            carrinho.push({
+                itemId: id,
+                tipo: 'servico',
+                nome: servico.nome,
+                precoTotal: servico.preco, 
+                quantidade: 1
+            });
+            renderizarCarrinho();
+        }
+    }
 
-  	// --- LÓGICA DO FORMULÁRIO ---
-  	
-  	window.toggleTroco = (valor) => {
-      	document.getElementById('troco-section').style.display = (valor === 'dinheiro') ? 'block' : 'none';
-  	}
-  	
-  	// --- ⭐ LÓGICA DE ENVIO CORRIGIDA (PIX VAI PARA SERVIÇOS DO DIA) ---
-  	
-  	async function enviarPedido(e) {
-      	e.preventDefault();
-      	const submitBtn = document.getElementById('btn-enviar-manual');
-      	
-      	if (!clienteSelecionado) {
-          	alert('Por favor, selecione um cliente da lista!');
-          	return;
-      	}
-      	
-      	const pagamentoSelect = document.getElementById('pagamento');
-      	let metodoPagamento = pagamentoSelect.options[pagamentoSelect.selectedIndex].text;
-      	let tipoPagamentoValue = pagamentoSelect.value; 
-
-        // ⭐ CORREÇÃO 2: Se o carrinho estiver vazio MAS for "Lançar na Mensalidade", adiciona a mensalidade
+    // --- LÓGICA DO FORMULÁRIO ---
+    
+    window.toggleTroco = (valor) => {
+        document.getElementById('troco-section').style.display = (valor === 'dinheiro') ? 'block' : 'none';
+    }
+    
+    // --- ⭐ LÓGICA DE ENVIO PARA APROVAÇÃO (PEDIDOS PENDENTES) ⭐ ---
+    
+    async function enviarPedido(e) {
+        e.preventDefault();
+        const submitBtn = document.getElementById('btn-enviar-manual');
+        
+        if (!clienteSelecionado) {
+            alert('Por favor, selecione um cliente da lista!');
+            return;
+        }
+        
+        const pagamentoSelect = document.getElementById('pagamento');
+        let metodoPagamento = pagamentoSelect.options[pagamentoSelect.selectedIndex].text;
+        let tipoPagamentoValue = pagamentoSelect.value; 
+        let subtotal = carrinho.reduce((sum, item) => sum + (item.precoTotal * item.quantidade), 0);
+        
         if (carrinho.length === 0 && tipoPagamentoValue === 'mensalidade') {
-            // Adiciona o item "Cobrança de Mensalidade" (s0) automaticamente
             const servicoMensalidade = servicos_avulsos.find(s => s.id === 's0');
             if (servicoMensalidade) {
                  carrinho.push({
                     itemId: servicoMensalidade.id,
-              		tipo: 'servico',
-              		nome: servicoMensalidade.nome,
-                    // O preço 0.00 será atualizado no faturamento com a mensalidade do cliente
-              		precoTotal: 0.00, 
-              		quantidade: 1
+                    tipo: 'servico',
+                    nome: servicoMensalidade.nome,
+                    precoTotal: 0.00, 
+                    quantidade: 1
                 });
-                renderizarCarrinho(); // Atualiza a UI antes de prosseguir
+                renderizarCarrinho(); 
             }
         } else if (carrinho.length === 0) {
-            // Se o carrinho estiver vazio e NÃO for "Lançar na Mensalidade"
             alert('O carrinho está vazio!');
-          	return;
+            return;
         }
-      	
-      	submitBtn.disabled = true;
-      	submitBtn.textContent = 'Enviando...';
+        
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Enviando para Aprovação...'; 
 
-      	if (tipoPagamentoValue === 'dinheiro' && document.getElementById('troco-valor').value) {
-          	metodoPagamento += ` (Troco para: R$ ${document.getElementById('troco-valor').value})`;
-      	}
-
-      	var subtotal = carrinho.reduce((sum, item) => sum + (item.precoTotal * item.quantidade), 0);
-      	
-      	const pedidoCompleto = {
-          	cliente: clienteSelecionado, 
-          	itens: carrinho,
-          	pagamento: metodoPagamento, 
-          	total: subtotal,
-          	status: 'Pendente', // ⭐ CORREÇÃO 1: Todo pedido começa como 'Pendente'
-          	hora: new Date().toISOString(),
-          	faturado: false 
-      	};
-      	
-      	try {
-          	// ⭐ CORREÇÃO 1: Todos os pedidos são salvos no nó 'servicos'
-            // O 'servicos_do_dia.html' vai ler daqui
-          	await push(pedidosRef, pedidoCompleto);
+        if (tipoPagamentoValue === 'dinheiro' && document.getElementById('troco-valor').value) {
+            metodoPagamento += ` (Troco para: R$ ${document.getElementById('troco-valor').value})`;
+        }
+        
+        const pedidoCompleto = {
+            timestamp: Date.now(), 
+            tipo: 'PDV', 
+            cliente: { 
+                id: clienteSelecionado.id,
+                nome: clienteSelecionado.nome,
+                endereco: document.getElementById('cliente-endereco').value 
+            }, 
+            itens: carrinho,
+            pagamento: metodoPagamento, 
+            total: subtotal,
+            status: 'Pendente', 
+            faturado: false 
+        };
+        
+        try {
+            await push(pedidosPendentesRef, pedidoCompleto);
             
-            if (tipoPagamentoValue !== 'mensalidade') {
-                alert(`Venda rápida (PIX, Cartão, etc.) no valor de R$ ${subtotal.toFixed(2)} foi lançada em "Serviços do Dia".`);
-            } else {
-              	alert('Serviço/Venda lançado com sucesso para "Serviços do Dia" (para faturamento futuro)!');
-          	}
+            alert(`Pedido PDV de R$ ${subtotal.toFixed(2)} enviado para aprovação em "Serviços do Dia"!`);
 
-          	// Limpa tudo
-          	carrinho = [];
-          	clienteSelecionado = null;
-          	document.getElementById('form-manual').reset(); 
-          	toggleTroco(''); 
-            filterClients(); // Limpa o filtro de clientes
-            filterProducts(); // Limpa o filtro de produtos
-          	renderizarCarrinho();
-          	
-      	} catch (error) {
-          	console.error("Erro ao enviar pedido: ", error);
-          	alert('Erro ao enviar pedido. Tente novamente.');
-      	} finally {
-          	submitBtn.disabled = false;
-          	submitBtn.textContent = 'Lançar Serviço/Venda';
-      	}
-  	}
-  	
-  	// --- INICIALIZAÇÃO DAS FUNÇÕES GLOBAIS ---
-  	window.toggleTroco = toggleTroco;
-  	window.adicionarProduto = adicionarProduto;
-  	window.adicionarServico = adicionarServico;
-  	window.removerDoCarrinho = removerDoCarrinho;
-  	window.aumentarQuantidade = aumentarQuantidade;
-  	window.diminuirQuantidade = diminuirQuantidade;
-  	window.atualizarPreco = atualizarPreco;
+            // Limpa tudo
+            carrinho = [];
+            clienteSelecionado = null;
+            document.getElementById('form-manual').reset(); 
+            toggleTroco(''); 
+            filterClients(); 
+            filterProducts(); 
+            renderizarCarrinho();
+            
+        } catch (error) {
+            console.error("Erro ao enviar pedido: ", error);
+            alert('Erro ao enviar pedido. Verifique as Regras de Permissão do Firebase.');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Lançar Serviço/Venda';
+        }
+    }
+    
+    // --- INICIALIZAÇÃO DAS FUNÇÕES GLOBAIS ---
+    window.toggleTroco = toggleTroco;
+    window.adicionarProduto = adicionarProduto;
+    window.adicionarServico = adicionarServico;
+    window.removerDoCarrinho = removerDoCarrinho;
+    window.aumentarQuantidade = aumentarQuantidade;
+    window.diminuirQuantidade = diminuirQuantidade;
+    window.atualizarPreco = atualizarPreco;
     window.filterClients = filterClients; 
     window.filterProducts = filterProducts; 
     window.preencherCliente = preencherCliente; 
