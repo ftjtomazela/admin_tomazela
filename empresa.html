@@ -98,16 +98,21 @@
 </head>
 <body>
 
-    <div class="admin-nav">
+<div class="admin-nav">
     <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
-    <a href="produtos.html" class="nav-btn">📦 Produtos</a>
     <a href="clientes.html" class="nav-btn">👥 Clientes</a>
-    <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
-    <a href="servicos_do_dia.html" class="nav-btn">📋 Serviços do Dia</a>
-    <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
-    <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
-    <a href="recebimentos.html" class="nav-btn">💰 Recebimentos</a> 
+    <a href="produtos.html" class="nav-btn">📦 Produtos</a>
+    
     <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
+    <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
+
+    <a href="servicos_do_dia.html" class="nav-btn">📋 Aprovação/Serviços</a>
+    <a href="pedidos_finalizados.html" class="nav-btn">💰 Pedidos Finalizados</a>
+    <a href="faturamento.html" class="nav-btn">💲 Faturamento/Recebimentos</a>
+    
+    <a href="gerenciar_visitas.html" class="nav-btn">🛠️ Gerenciar Visitas</a>
+    <a href="empresa.html" class="nav-btn">🏢 Configurações</a>
+    
     <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
 </div>
 
@@ -170,7 +175,7 @@
             if (user) {
                 carregarDadosEmpresa(); // Carrega os dados quando a página abre
             } else {
-                window.location.href = 'login_piscina.html';
+                window.location.href = 'index.html';
             }
         });
 
@@ -226,4 +231,5 @@
 
     </script>
 </body>
+
 </html>
