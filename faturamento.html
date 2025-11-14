@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faturamento - Admin Piscina</title>
     <style>
-        /* (Todo o seu CSS de antes, sem mudanças) */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -30,7 +29,7 @@
             transition: all 0.3s; font-family: inherit; 
         }
         .nav-btn:hover { background: #4b5563; }
-        .nav-btn.active { background: #10b981; color: #fff; }
+        .nav-btn.active { background: #10b981; color: #fff; } /* Mudado para verde para Faturamento */
         .nav-btn.logout { background: #dc2626; color: #fff; margin-left: auto; }
         .nav-btn.logout:hover { background: #ef4444; }
 
@@ -79,7 +78,6 @@
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 10px;
-            /* ⭐ Borda verde para "A Faturar" */
             border-left: 4px solid #10b981; 
         }
         .cliente-card .nome {
@@ -87,7 +85,6 @@
             font-weight: bold;
             color: #fff;
         }
-        /* ⭐ Texto de status (substitui o vencimento) */
         .cliente-card .status-fatura {
             font-size: 1rem;
             color: #10b981;
@@ -177,8 +174,7 @@
         #btn-gerar-whatsapp { background: #25d366; color: #fff; }
         #btn-imprimir-fatura { background: #4b5563; color: #fff; }
         
-        
-        /* (Estilos de Impressão @media print ... são idênticos, sem mudanças) */
+        /* Estilos de Impressão */
         @media print {
             body {
                 background: #fff !important;
@@ -295,11 +291,9 @@
                 margin: 10mm;
             }
         }
-        
     </style>
-</head>
+    </head>
 <body>
-
     <div class="admin-nav">
     <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
     <a href="produtos.html" class="nav-btn">📦 Produtos</a>
@@ -307,8 +301,7 @@
     <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
     <a href="servicos_do_dia.html" class="nav-btn">📋 Serviços do Dia</a>
     <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
-    <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
-    <a href="recebimentos.html" class="nav-btn">💰 Recebimentos</a> 
+    <a href="faturamento.html" class="nav-btn active">💲 Faturamento</a> <a href="recebimentos.html" class="nav-btn">💰 Recebimentos</a> 
     <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
     <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
 </div>
@@ -418,7 +411,7 @@
         const faturasRef = ref(database, 'faturas');
 
         var clientes_db = [];
-        var servicos_db = []; // ⭐ Carregamos todos os serviços
+        var servicos_db = []; // Carregamos todos os serviços pendentes
         var dadosEmpresa = {};
         
         var clienteSelecionado = null;
@@ -440,13 +433,11 @@
             }
         });
         
-        // ⭐ INITPAGE ATUALIZADO (Carrega tudo)
         async function initPage() {
             try {
-                // Carrega clientes, TODOS os serviços, e empresa
-                const [clientesSnap, servicosSnap, empresaSnap] = await Promise.all([
+                // 1. Carrega Clientes e Empresa
+                const [clientesSnap, empresaSnap] = await Promise.all([
                     get(clientesRef),
-                    get(servicosRef),
                     get(empresaRef)
                 ]);
 
@@ -457,52 +448,62 @@
                     });
                 }
                 
-                servicos_db = [];
-                if (servicosSnap.exists()) {
-                    servicosSnap.forEach(child => {
-                        servicos_db.push({ id: child.key, ...child.val() });
-                    });
-                }
-                
                 if (empresaSnap.exists()) {
                     dadosEmpresa = empresaSnap.val();
                 }
+
+                // 2. Carrega APENAS serviços concluídos E não faturados
+                const servicosQuery = query(servicosRef, orderByChild('faturado'), equalTo(false));
+                const servicosSnap = await get(servicosQuery);
                 
+                servicos_db = [];
+                if (servicosSnap.exists()) {
+                    servicosSnap.forEach(child => {
+                        // Filtra novamente (pois 'faturado: false' pode incluir 'Pendente')
+                        const servico = child.val();
+                        if (servico.status === 'Concluído') {
+                            servicos_db.push({ id: child.key, ...servico });
+                        }
+                    });
+                }
+                
+                // 3. Renderiza a lista de clientes que têm algo a faturar
                 renderListaClientes();
 
             } catch (error) {
                 console.error("Erro ao carregar dados:", error);
-                document.getElementById('clientes-lista').innerHTML = '<p style="color:red;">Erro ao carregar dados. Verifique o console.</p>';
+                document.getElementById('clientes-lista').innerHTML = `<p style="color:red;">Erro ao carregar dados. Verifique as regras de leitura (READ) do Firebase.</p>`;
             }
         }
         
-        // ⭐ RENDERLISTACLIENTES ATUALIZADO (Nova Lógica de Filtro)
         function renderListaClientes() {
             const container = document.getElementById('clientes-lista');
             container.innerHTML = ''; // Limpa o "Carregando..."
             
-            // 1. Mapear quem tem itens a faturar
-            const clientesComItens = {}; // Ex: { "-ClienteID1": 3, "-ClienteID2": 1 }
+            // 1. Mapear quem tem itens a faturar (baseado nos serviços já filtrados)
+            const clientesComItens = {}; 
             servicos_db.forEach(servico => {
-                if (servico.status === 'Concluído' && servico.faturado === false) {
-                    const clienteId = servico.cliente.id;
-                    if (!clientesComItens[clienteId]) {
-                        clientesComItens[clienteId] = 0;
-                    }
-                    // Conta quantos *serviços* (não itens)
-                    clientesComItens[clienteId]++; 
+                // ⭐ VALIDAÇÃO DE SEGURANÇA (A causa do erro anterior) ⭐
+                // Ignora o serviço se os dados essenciais estiverem em falta
+                if (!servico || !servico.cliente || !servico.cliente.id) {
+                    console.warn("Serviço órfão ou mal formatado encontrado:", servico.id);
+                    return; 
                 }
+
+                const clienteId = servico.cliente.id;
+                if (!clientesComItens[clienteId]) {
+                    clientesComItens[clienteId] = 0;
+                }
+                clientesComItens[clienteId]++; 
             });
             
             // 2. Renderizar os cards
             let clientesEncontrados = 0;
-            const idsParaFaturar = Object.keys(clientesComItens); // Lista de IDs: ["-ClienteID1", "-ClienteID2"]
+            const idsParaFaturar = Object.keys(clientesComItens);
 
-            // Ordena os clientes do DB por nome
             clientes_db.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
 
             clientes_db.forEach(cliente => {
-                // Se o ID do cliente está na nossa lista de IDs a faturar...
                 if (idsParaFaturar.includes(cliente.id)) {
                     clientesEncontrados++;
                     const numItens = clientesComItens[cliente.id];
@@ -525,7 +526,6 @@
             }
         }
         
-        // ⭐ SELECIONARCLIENTE ATUALIZADO (Lógica antiga de filtro)
         window.selecionarCliente = async (clienteId) => {
             clienteSelecionado = clientes_db.find(c => c.id === clienteId);
             if (!clienteSelecionado) return;
@@ -542,14 +542,12 @@
             document.getElementById('fatura-titulo').textContent = `Fatura: ${clienteSelecionado.nome}`;
             
             try {
-                // 1. Filtra a lista global (servicos_db) que já carregamos
+                // 1. Filtra a lista global (servicos_db)
                 itensParaFaturar = servicos_db.filter(s =>
                     s.cliente.id === clienteId &&
                     s.status === 'Concluído' &&
                     s.faturado === false
                 );
-                
-                // (O resto da função... 2, 3, 4, 5, 6... é idêntica!)
                 
                 // 2. Renderiza cabeçalhos
                 document.getElementById('fatura-empresa-header').innerHTML = `
@@ -560,7 +558,7 @@
                 document.getElementById('fatura-cliente-header').innerHTML = `
                     <p><strong>Cliente:</strong> ${clienteSelecionado.nome}</p>
                     <p><strong>Endereço:</strong> ${clienteSelecionado.enderecoRua || ''}, ${clienteSelecionado.enderecoNum || ''}</p>
-                    <p><strong>Vencimento:</strong> ${clienteSelecionado.diaVencimento} de cada mês</p>
+                    <p><strong>Vencimento:</strong> ${clienteSelecionado.diaVencimento || 'N/A'} de cada mês</p>
                 `;
                 
                 // 3. Renderiza os itens e calcula totais
@@ -587,6 +585,13 @@
 
                 if (itensParaFaturar.length > 0) {
                     itensParaFaturar.forEach(servico => {
+                        // ⭐ VALIDAÇÃO DE SEGURANÇA (A causa do erro anterior) ⭐
+                        // Se o serviço não tiver 'itens' (ex: um erro de PDV), pula este serviço
+                        if (!servico.itens || !Array.isArray(servico.itens)) {
+                            console.warn("Serviço ignorado por não conter 'itens':", servico.id);
+                            return;
+                        }
+
                         servico.itens.forEach(item => {
                             const vlUnitario = item.precoTotal || 0;
                             const quantidade = item.quantidade || 1;
@@ -639,7 +644,7 @@
 
             } catch (e) {
                 console.error("Erro ao montar fatura:", e);
-                alert("Erro ao montar a fatura.");
+                alert("Erro ao montar a fatura. Verifique o console para detalhes.");
             } finally {
                 if(btnFatura) {
                     btnFatura.disabled = false;
@@ -664,14 +669,17 @@
             try {
                 const updates = {};
                 
+                // Marca os serviços avulsos como faturados
                 itensParaFaturar.forEach(servico => {
                     updates[`/servicos/${servico.id}/faturado`] = true;
                 });
                 
+                // Cria a fatura no histórico
                 const novaFaturaRef = push(faturasRef);
                 updates[`/faturas/${novaFaturaRef.key}`] = {
                     ...faturaCalculada,
-                    dataFechamento: new Date().toISOString()
+                    dataFechamento: new Date().toISOString(),
+                    status: 'Pendente' // Fatura é criada como pendente de pagamento
                 };
                 
                 await update(ref(database), updates);
@@ -725,4 +733,6 @@
 
     </script>
 </body>
+</html>
+    </body>
 </html>
