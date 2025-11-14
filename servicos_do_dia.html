@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Serviços Pendentes - Admin Piscina</title>
+    <title>Serviços do Dia - Aprovação</title>
     <style>
-        /* --- ESTILOS DA TELA (NÃO IMPRESSÃO) --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -13,592 +12,464 @@
             color: #ffffff;
             min-height: 100vh;
         }
-        .admin-nav {
-            background: #111827;
-            padding: 12px 20px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #007bff;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
+        .admin-nav { 
+            background: #111827; padding: 12px 20px; margin-bottom: 20px;
+            border-bottom: 2px solid #007bff; display: flex; gap: 10px;
+            align-items: center; flex-wrap: wrap;
         }
-        .nav-btn {
-            background: #374151; color: #f3f4f6; border: none;
-            padding: 10px 15px; border-radius: 8px; font-weight: bold;
-            font-size: 0.9rem; cursor: pointer; text-decoration: none; 
-            transition: all 0.3s; font-family: inherit; 
-        }
+        .nav-btn { background: #374151; color: #f3f4f6; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; cursor: pointer; text-decoration: none; transition: all 0.3s; font-family: inherit; }
         .nav-btn:hover { background: #4b5563; }
         .nav-btn.active { background: #007bff; color: #fff; } 
         .nav-btn.logout { background: #dc2626; color: #fff; margin-left: auto; }
         .nav-btn.logout:hover { background: #ef4444; }
 
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header { text-align: center; margin-bottom: 30px; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid #007bff; }
         .header h1 { font-size: 2.5rem; color: #fff; }
-        
-        #loading-msg, #sem-servicos-msg {
-            text-align: center;
-            font-size: 1.5rem;
-            color: #fff;
-            padding: 50px;
-        }
-        #sem-servicos-msg { display: none; } /* Começa escondido */
-        
-        #servicos-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-        }
-        
-        /* --- ESTILO DA NOTINHA NA TELA --- */
-        .servico-card {
-            background: #ffffff; 
-            color: #000000; 
-            border-radius: 12px;
-            border-top: 10px solid #007bff; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s;
-            .print-only { display: none; }
-        }
-        
-        .servico-card.status-concluido {
-            border-top-color: #10b981; 
-            opacity: 0.7;
-        }
-        
-        .card-empresa-header {
-            padding: 20px;
-            border-bottom: 2px solid #000;
-            text-align: center;
-        }
-        .empresa-nome {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #000;
-        }
-        .empresa-detalhe {
-            font-size: 0.9rem;
-            color: #333;
-            margin-top: 3px;
-        }
 
-        .card-header {
-            padding: 20px;
-            border-bottom: 2px dashed #cccccc;
+        #lista-pendentes { list-style: none; padding: 0; display: grid; gap: 20px; }
+        .card-item {
+            background: #2d3748; border-radius: 12px; padding: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
-        .card-header .cliente-nome {
-            font-size: 1.6rem;
-            font-weight: bold;
-            color: #000;
-        }
-        .card-header .cliente-info {
-            font-size: 1rem;
-            color: #333;
-            margin-top: 5px;
-        }
-        .card-header .timestamp {
-            font-size: 0.85rem;
-            color: #555;
-            margin-top: 10px;
+        .card-visita { border-left: 5px solid #f59e0b; } 
+        .card-pdv { border-left: 5px solid #00bfff; } 
+        
+        .card-item h3 { color: #fff; margin-bottom: 5px; }
+        .card-item p { color: #9ca3af; font-size: 0.9rem; margin-bottom: 3px; }
+        .card-item strong { color: #10b981; }
+        .card-info { flex-grow: 1; padding-right: 15px; } 
+        
+        .card-actions { 
+            display: flex; flex-direction: column; gap: 8px; /* Coluna para caber mais botões */
+            min-width: 150px; /* Garante que os botões caibam */
         }
         
-        .card-body {
-            padding: 20px;
-            flex-grow: 1;
+        .btn-aprovar {
+            background: #10b981; color: #fff; border: none;
+            padding: 8px 12px; border-radius: 8px; cursor: pointer;
+            font-weight: bold; transition: background 0.3s;
         }
-        .card-body h4 {
-            font-size: 1.1rem;
-            color: #000;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
+        .btn-aprovar:hover { background: #059669; }
+
+        .btn-excluir {
+            background: #dc2626; color: #fff; border: none;
+            padding: 8px 12px; border-radius: 8px; cursor: pointer;
+            font-weight: bold; transition: background 0.3s;
         }
-        .itens-lista {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        .btn-excluir:hover { background: #ef4444; }
+        
+        /* ⭐ NOVOS ESTILOS PARA PDV ⭐ */
+        .btn-recibo {
+            background: #007bff; /* Azul para Recibo */
+            color: #fff; border: none;
+            padding: 8px 12px; border-radius: 8px; cursor: pointer;
+            font-weight: bold; transition: background 0.3s;
         }
-        .item-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 1rem;
+        .btn-recibo:hover { background: #0056b3; }
+        
+        /* --- MODAL --- */
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7);
         }
-        .item-row .nome {
-            font-weight: 500;
+        .modal-content {
+            background-color: #2d3748; margin: 10% auto; padding: 20px;
+            border: 1px solid #4b5563; width: 80%; max-width: 500px;
+            border-radius: 12px;
         }
-        .item-row .total {
-            font-weight: bold;
+        .modal-content h2 { color: #007bff; margin-bottom: 15px; }
+        .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+        .close-btn:hover, .close-btn:focus { color: #fff; text-decoration: none; cursor: pointer; }
+        
+        /* Estilo da "Notinha" */
+        #recibo-content { 
+            background: #fff; color: #000; padding: 15px; border-radius: 8px; 
+            font-family: monospace; font-size: 0.85rem; line-height: 1.4;
+            white-space: pre-wrap; /* Mantém a formatação de nova linha */
         }
         
-        .card-total {
-            display: flex;
-            justify-content: space-between;
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #000;
-            border-top: 2px solid #000;
-            padding-top: 10px;
-            margin-top: 15px;
-        }
+        .recibo-actions { margin-top: 15px; display: flex; gap: 10px; }
+        .recibo-actions button { padding: 10px; border-radius: 8px; cursor: pointer; }
+        .btn-whatsapp { background: #25d366; color: #fff; border: none; }
+        .btn-print { background: #6c757d; color: #fff; border: none; }
         
-        .card-pagamento {
-            padding: 15px 20px;
-            background: #f4f4f4;
-            border-top: 2px dashed #cccccc;
-        }
-        .card-pagamento span {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .card-footer {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr; 
-            gap: 10px;
-            padding: 15px;
-            border-top: 1px solid #eee;
-            background: #f9f9f9;
-            border-radius: 0 0 12px 12px;
-        }
-        .card-footer button {
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .btn-print {
-            background: #4b5563;
-            color: #fff;
-        }
-        .btn-print:hover { background: #374151; }
-        
-        .btn-concluir {
-            background: #10b981;
-            color: #fff;
-        }
-        .btn-concluir:hover { background: #059669; }
-        .btn-concluir:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
-        }
-        
-        .btn-cancelar {
-            background: #dc2626; /* Vermelho */
-            color: #fff;
-        }
-        .btn-cancelar:hover { background: #b91c1c; }
-        
-        
-        /* --- ESTILOS DE IMPRESSÃO (Sem mudanças) --- */
+        /* Esconde a interface de admin ao imprimir */
         @media print {
-            body {
-                background: #fff !important;
-                color: #000 !important;
-                margin: 0;
-                padding: 0;
+            body > *:not(.modal-content), .modal-content .close-btn, .recibo-actions { display: none !important; }
+            .modal { position: static; background: none; }
+            .modal-content { 
+                margin: 0; width: 100%; max-width: none; border: none; 
+                background: #fff; color: #000; padding: 0;
             }
-            .admin-nav, .container > .header, #loading-msg, #sem-servicos-msg {
-                display: none !important;
-            }
-            .servico-card {
-                display: none !important;
-                visibility: hidden !important;
-            }
-            .container, #servicos-container {
-                display: block !important;
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            .servico-card.imprimindo {
-                display: flex !important;
-                visibility: visible !important;
-                width: 100% !important; 
-                position: absolute;
-                top: 0;
-                left: 0;
-                margin: 0; 
-                padding: 0;
-                box-shadow: none;
-                border: 2px solid #000;
-                border-top: 10px solid #000;
-                border-radius: 0;
-                color: #000;
-                .card-empresa-header,
-                .card-header,
-                .card-body,
-                .card-pagamento {
-                    padding: 15px 15mm !important; 
-                }
-                .card-body h4 {
-                    padding-bottom: 5px;
-                    margin-bottom: 10px;
-                    border-bottom: 1px solid #ccc;
-                }
-                .card-total {
-                    padding-top: 10px;
-                    margin-top: 15px;
-                    border-top: 2px solid #333;
-                }
-                .print-assinatura {
-                    margin-top: 40px;
-                    text-align: center;
-                    font-size: 1rem;
-                }
-                .print-assinatura-linha {
-                    border-bottom: 1px solid #000;
-                    width: 70%;
-                    margin: 0 auto 8px auto;
-                }
-            }
-            .servico-card.imprimindo .card-footer {
-                display: none !important;
-            }
-            .servico-card.imprimindo .print-only {
-                display: block !important;
-            }
-            .servico-card.imprimindo .card-header .cliente-nome {
-                font-size: 1.6rem;
-            }
-            .servico-card.imprimindo .print-label {
-                font-weight: bold;
-                color: #000;
-            }
-            .servico-card.imprimindo .print-data {
-                font-weight: normal;
-                color: #333;
-            }
-            @page {
-                size: A5 portrait; 
-                margin: 10mm; 
+            #recibo-content { 
+                padding: 0; margin: 0; width: 100%; 
+                font-size: 11pt; 
+                color: #000; 
+                white-space: pre-wrap;
             }
         }
-        
     </style>
 </head>
 <body>
 
     <div class="admin-nav">
-    <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
-    <a href="produtos.html" class="nav-btn">📦 Produtos</a>
-    <a href="clientes.html" class="nav-btn">👥 Clientes</a>
-    <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
-    <a href="servicos_do_dia.html" class="nav-btn">📋 Serviços do Dia</a>
-    <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
-    <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
-    <a href="recebimentos.html" class="nav-btn">💰 Recebimentos</a> 
-    <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
-    <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
-</div>
+        <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
+        <a href="produtos.html" class="nav-btn">📦 Produtos</a>
+        <a href="clientes.html" class="nav-btn">👥 Clientes</a>
+        <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
+        <a href="servicos_do_dia.html" class="nav-btn active">📋 Serviços do Dia</a>
+        <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
+        <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
+        <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
+        <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
+    </div>
 
     <div class="container">
         <div class="header">
-            <h1>📋 Serviços Pendentes</h1>
+            <h1>📋 Aprovação de Fichas e Pedidos</h1>
+            <p id="msg-status" style="color: #f59e0b; margin-top: 10px;">Carregando itens pendentes...</p>
         </div>
 
-        <div id="loading-msg">Carregando serviços...</div>
-        
-        <div id="sem-servicos-msg">Tudo limpo! Nenhum serviço pendente.</div>
-
-        <div id="servicos-container">
-            </div>
+        <ul id="lista-pendentes">
+            </ul>
     </div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-    import { 
-        getDatabase, ref, get, update, 
-        onChildAdded, onChildChanged, onChildRemoved // Importações corretas
-    } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
-        authDomain: "tomazela-piscinas.firebaseapp.com",
-        databaseURL: "https://tomazela-piscinas-default-rtdb.firebaseio.com", 
-        projectId: "tomazela-piscinas",
-        storageBucket: "tomazela-piscinas.firebasestorage.app",
-        messagingSenderId: "776818671387",
-        appId: "1:776818671387:web:ca4211e6fa8f3f1c889dbe",
-        measurementId: "G-PP230KYC4X"
-    };
     
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-    const auth = getAuth(app);
-    
-    const servicosRef = ref(database, 'servicos');
-    const empresaRef = ref(database, 'empresa'); 
-    let dadosEmpresa = {}; 
-
-    
-    // --- VIGIA E LOGOUT ---
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            initPage();
-        } else {
-            window.location.href = 'login_piscina.html';
-        }
-    });
-    
-    const logoutBtn = document.getElementById('logout-btn');
-    logoutBtn.addEventListener('click', () => {
-        if (confirm("Tem certeza que deseja sair?")) {
-            signOut(auth); 
-        }
-    });
-    
-    async function initPage() {
-        try {
-            // 1. Carrega os dados da empresa primeiro
-            const snapshot = await get(empresaRef);
-            if (snapshot.exists()) {
-                dadosEmpresa = snapshot.val();
-            }
-        } catch (e) {
-            console.error("Erro ao carregar dados da empresa: ", e);
-        }
-        
-        // 2. Esconde o "Carregando..."
-        document.getElementById('loading-msg').style.display = 'none';
-        
-        // 3. Inicia os "ouvintes" em tempo real
-        attachListeners(); 
-    }
-
-    // --- LÓGICA EM TEMPO REAL (O "CÉREBRO") ---
-    function attachListeners() {
-        // Ouve por novos serviços adicionados
-        onChildAdded(servicosRef, (snapshot) => {
-            const data = snapshot.val();
-            // Mostra o card APENAS se o status for "Pendente"
-            if (data.status === 'Pendente') {
-                renderServicoCard(snapshot);
-            }
-            checkIfEmpty(); 
-        });
-        
-        // Ouve por serviços que mudaram (Ex: status mudou)
-        onChildChanged(servicosRef, (snapshot) => {
-            const data = snapshot.val();
-            const id = snapshot.key;
-            
-            if (data.status === 'Pendente') {
-                // Se mudou mas ainda está pendente, re-renderiza
-                renderServicoCard(snapshot);
-            } else {
-                // Se mudou para "Concluído" ou "Cancelado", remove da tela
-                const el = document.getElementById(id);
-                if (el) {
-                    el.remove();
-                }
-            }
-            checkIfEmpty(); 
-        });
-        
-        // Ouve por serviços removidos do banco
-        onChildRemoved(servicosRef, (snapshot) => {
-            const el = document.getElementById(snapshot.key);
-            if (el) {
-                el.remove();
-            }
-            checkIfEmpty(); 
-        });
-    }
-    
-    // Verifica se a lista de cards está vazia
-    function checkIfEmpty() {
-        const container = document.getElementById('servicos-container');
-        const msg = document.getElementById('sem-servicos-msg');
-        
-        // Usamos um pequeno delay para dar tempo do DOM atualizar
-        setTimeout(() => {
-            if (container.children.length === 0) {
-                msg.style.display = 'block';
-            } else {
-                msg.style.display = 'none';
-            }
-        }, 100);
-    }
-    
-    // --- RENDERIZAR A "NOTINHA" ---
-    function renderServicoCard(snapshot) {
-        const id = snapshot.key;
-        const data = snapshot.val();
-        const container = document.getElementById('servicos-container');
-        
-        // Procura se o card já existe, para atualizar em vez de criar um novo
-        let existingCard = document.getElementById(id);
-        if (!existingCard) {
-            existingCard = document.createElement('div');
-            existingCard.id = id;
-        }
-        
-        existingCard.className = `servico-card status-${data.status.toLowerCase()}`;
-        
-        const hora = new Date(data.hora).toLocaleString('pt-BR', {
-            day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-        });
-        
-        // Cria a lista de itens
-        const itensHTML = data.itens.map(item => `
-            <div class="item-row">
-                <span class="nome">${item.quantidade}x ${item.nome}</span>
-                <span class="total">R$ ${(item.precoTotal * item.quantidade).toFixed(2)}</span>
-            </div>
-        `).join('');
-        
-        const btnDisabled = '';
-        const btnText = '✔️ Concluir'; // Texto mais curto
-        
-        // Cabeçalho da Empresa
-        const empresaHTML = `
-            <div class="card-empresa-header">
-                <div class="empresa-nome">${dadosEmpresa.nome || 'Nome da Empresa'}</div>
-                <div class="empresa-detalhe">CNPJ: ${dadosEmpresa.cnpj || 'Não informado'}</div>
-                <div class="empresa-detalhe">Tel: ${dadosEmpresa.telefone || 'Não informado'}</div>
-                <div class="empresa-detalhe">${dadosEmpresa.endereco || 'Endereço não informado'}</div>
-            </div>
-        `;
-        
-        // Detalhes do Cliente
-        const clienteEndereco = `${data.cliente.enderecoRua || ''}, ${data.cliente.enderecoNum || 'S/N'} - ${data.cliente.enderecoBairro || ''}`;
-        const clienteHTML = `
-            <div class="card-header">
-                <div class="cliente-info">
-                    <span class="print-label">Data:</span> 
-                    <span class="print-data">${hora}</span>
+    <div id="reciboModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="fecharModal()">&times;</span>
+            <h2>Recibo de Venda</h2>
+            <div id="recibo-content">
                 </div>
-                <div class="cliente-info" style="margin-top: 10px;">
-                    <span class="print-label">Cliente:</span> 
-                    <span class="cliente-nome print-data">${data.cliente.nome || 'Não informado'}</span>
-                </div>
-                <div class="cliente-info">
-                    <span class="print-label">Endereço:</span> 
-                    <span class="print-data">${clienteEndereco}</span>
-                </div>
-                <div class="cliente-info">
-                    <span class="print-label">Telefone:</span> 
-                    <span class="print-data">${data.cliente.telefone || 'Não informado'}</span>
-                </div>
-                
-                <div class="timestamp print-only" style="font-size: 0.9rem; text-align: right; margin-top: 10px;">
-                    ID do Serviço: ${id}
-                </div>
-            </div>
-        `;
-        
-        // Linha de assinatura para impressão
-        const assinaturaHTML = `
-            <div class="print-only print-assinatura">
-                <div class="print-assinatura-linha"></div>
-                <span class="print-label">Assinatura do Cliente</span>
-                <p style="font-size: 0.9rem; margin-top: 5px;">
-                    Declaro que os serviços/produtos listados acima foram recebidos.
-                </p>
-            </div>
-        `;
-
-        // Monta o card completo
-        existingCard.innerHTML = `
-            ${empresaHTML} 
-            ${clienteHTML} 
-            
-            <div class="card-body">
-                <h4>Itens / Serviços</h4>
-                <div class="itens-lista">
-                    ${itensHTML}
-                </div>
-                
-                <div class="card-total">
-                    <span>TOTAL:</span>
-                    <span>R$ ${data.total.toFixed(2)}</span>
-                </div>
-                
-                ${assinaturaHTML}
-            </div>
-            
-            <div class="card-pagamento">
-                <span>Pagamento: <strong>${data.pagamento}</strong></span>
-            </div>
-            
-            <div class="card-footer">
-                <button class="btn-print" onclick="imprimirCard('${id}')">🖨️ Imprimir</button>
-                <button class="btn-cancelar" onclick="cancelarCard('${id}')">❌ Cancelar</button>
-                <button class="btn-concluir" onclick="concluirCard('${id}')" ${btnDisabled}>
-                    ${btnText}
+            <div class="recibo-actions">
+                <button class="btn-whatsapp" onclick="enviarWhatsApp()">
+                    <img src="whatsapp_icon.png" style="width: 20px; vertical-align: middle;"> Enviar WhatsApp
+                </button>
+                <button class="btn-print" onclick="imprimirRecibo()">
+                    Imprimir
                 </button>
             </div>
-        `;
-        
-        // Adiciona o card no topo da lista
-        container.prepend(existingCard);
-    }
-    
-    // --- FUNÇÕES DE AÇÃO (Com Cancelar) ---
-    
-    // ⭐⭐ FUNÇÃO CONCLUIR COM O BUG CORRIGIDO ⭐⭐
-    window.concluirCard = async (id) => {
-        if (!confirm("Tem certeza que deseja marcar este serviço como 'Concluído'? \n\nEle será enviado para o faturamento.")) {
-            return;
-        }
-        
-        try {
-            const servicoRef = ref(database, `servicos/${id}`);
-            await update(servicoRef, {
-                status: 'Concluído',
-                faturado: false // <-- AQUI A CORREÇÃO!
-            });
-            // O onChildChanged vai pegar a mudança e remover o card
-        } catch (e) {
-            console.error("Erro ao concluir serviço: ", e);
-            alert("Erro ao atualizar o status.");
-        }
-    }
-    
-    // Função para Cancelar (Muda status para 'Cancelado')
-    window.cancelarCard = async (id) => {
-        if (!confirm("Tem certeza que quer CANCELAR este lançamento? \n\nEle sumirá da lista de pendentes e NÃO será faturado.")) {
-            return;
-        }
-        
-        try {
-            const servicoRef = ref(database, `servicos/${id}`);
-            await update(servicoRef, {
-                status: 'Cancelado' 
-            });
-            // O onChildChanged vai pegar a mudança e remover o card
-        } catch (e) {
-            console.error("Erro ao cancelar serviço: ", e);
-            alert("Erro ao atualizar o status.");
-        }
-    }
-    
-    // Função para Imprimir
-    window.imprimirCard = (id) => {
-        const card = document.getElementById(id);
-        if (!card) return;
-        
-        card.classList.add('imprimindo');
-        window.print();
-        
-        setTimeout(() => {
-            card.classList.remove('imprimindo');
-        }, 500); 
-    }
+        </div>
+    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { getDatabase, ref, get, push, remove } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
-</script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
+            authDomain: "tomazela-piscinas.firebaseapp.com",
+            databaseURL: "https://tomazela-piscinas-default-rtdb.firebaseio.com", 
+            projectId: "tomazela-piscinas",
+            storageBucket: "tomazela-piscinas.firebasestorage.app", 
+            messagingSenderId: "776818671387",
+            appId: "1:776818671387:web:ca4211e6fa8f3f1c889dbe",
+            measurementId: "G-PP230KYC4X"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        
+        // Referências
+        const visitasRef = ref(database, 'visitas'); 
+        const visitasPendentesRef = ref(database, 'visitas_pendentes'); 
+        const pedidosRef = ref(database, 'pedidos'); 
+        const pedidosPendentesRef = ref(database, 'pedidos_pendentes'); 
+
+        // Elementos DOM
+        const listaPendentes = document.getElementById('lista-pendentes');
+        const msgStatus = document.getElementById('msg-status');
+        const reciboContent = document.getElementById('recibo-content');
+        const reciboModal = document.getElementById('reciboModal');
+        
+        let pedidoAtualParaRecibo = null; // Variável global para armazenar o pedido
+
+        // --- VIGIA E LOGOUT ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                carregarTodosPendentes();
+            } else {
+                window.location.href = 'login_piscina.html';
+            }
+        });
+        
+        const logoutBtn = document.getElementById('logout-btn');
+        logoutBtn.addEventListener('click', () => {
+            if (confirm("Tem certeza que deseja sair?")) {
+                signOut(auth);
+            }
+        });
+        
+        // --- FUNÇÕES DE LÓGICA DE DADOS ---
+
+        async function carregarTodosPendentes() {
+            msgStatus.textContent = "Carregando itens pendentes...";
+            
+            try {
+                let todosPendentes = [];
+                
+                // Carrega Visitas Pendentes
+                const visitasSnapshot = await get(visitasPendentesRef);
+                if (visitasSnapshot.exists()) {
+                    visitasSnapshot.forEach(child => {
+                        todosPendentes.push({ id: child.key, ...child.val(), tipo: 'Visita' }); 
+                    });
+                }
+                
+                // Carrega Pedidos Pendentes
+                const pedidosSnapshot = await get(pedidosPendentesRef);
+                if (pedidosSnapshot.exists()) {
+                    pedidosSnapshot.forEach(child => {
+                        todosPendentes.push({ id: child.key, ...child.val(), tipo: 'PDV' }); 
+                    });
+                }
+
+                listaPendentes.innerHTML = '';
+                
+                if (todosPendentes.length > 0) {
+                    todosPendentes.sort((a, b) => b.timestamp - a.timestamp);
+                    todosPendentes.forEach(item => {
+                        renderizarItemPendente(item);
+                    });
+                    
+                    msgStatus.textContent = `Encontrados ${todosPendentes.length} itens (Visitas/Pedidos) para aprovação.`;
+                    msgStatus.style.color = '#fff';
+                    
+                } else {
+                    msgStatus.textContent = "🥳 Nenhum item pendente no momento!";
+                    msgStatus.style.color = '#10b981'; 
+                }
+            } catch (e) {
+                console.error("Erro ao carregar itens pendentes: ", e);
+                msgStatus.textContent = "❌ Erro ao carregar os itens. Verifique as Regras de Permissão do Firebase.";
+                msgStatus.style.color = '#dc2626'; 
+            }
+        }
+
+        function renderizarItemPendente(item) {
+            const li = document.createElement('li');
+            li.className = `card-item card-${item.tipo.toLowerCase()}`; 
+            li.dataset.id = item.id; 
+
+            if (item.tipo === 'Visita') {
+                const servicos = item.servicos && item.servicos.length > 0 ? item.servicos.join(', ') : 'Nenhum.';
+                const produtosUtilizados = item.produtos || 'Nenhum.';
+
+                li.innerHTML = `
+                    <div class="card-info">
+                        <h3>Ficha de Visita: ${item.clienteNome}</h3>
+                        <p>Data: <strong>${new Date(item.dataVisita).toLocaleDateString('pt-BR')}</strong></p>
+                        <p>Parâmetros: pH: ${item.ph || '-'} | Alcalinidade: ${item.alcalinidade || '-'} | Cloro: ${item.cloro || '-'}</p>
+                        <p>Serviços: ${servicos}</p>
+                        <p>Produtos Utilizados: <strong>${produtosUtilizados}</strong></p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-excluir" data-id="${item.id}" data-tipo="${item.tipo}">Excluir</button>
+                        <button class="btn-aprovar" data-id="${item.id}" data-tipo="${item.tipo}">Aprovar Visita</button>
+                    </div>
+                `;
+                
+                li.querySelector('.btn-aprovar').addEventListener('click', () => {
+                    const { id: _, ...dadosParaAprovar } = item;
+                    aprovarItem(item.id, dadosParaAprovar, li, visitasRef, visitasPendentesRef);
+                });
+
+            } else if (item.tipo === 'PDV') {
+                
+                const valorFormatado = (typeof item.total === 'number' && !isNaN(item.total)) 
+                                        ? item.total.toFixed(2).replace('.', ',') 
+                                        : '0,00'; 
+                
+                const nomeCliente = item.cliente && item.cliente.nome ? item.cliente.nome : 'Cliente Desconhecido';
+
+                li.innerHTML = `
+                    <div class="card-info">
+                        <h3>Pedido PDV: ${nomeCliente}</h3>
+                        <p>Data: <strong>${new Date(item.timestamp).toLocaleDateString('pt-BR')}</strong></p>
+                        <p>Valor Total: <strong style="color: #00bfff;">R$ ${valorFormatado}</strong></p>
+                        <p>Pagamento: <strong>${item.pagamento}</strong></p>
+                        <p>Itens: ${item.itens.map(i => `${i.nome} (${i.quantidade}x)`).join(', ')}</p>
+                        <p>Obs: ${item.observacoes || 'Nenhuma.'}</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-recibo" data-id="${item.id}">Ver Recibo</button> 
+                        <button class="btn-aprovar" data-id="${item.id}" data-tipo="${item.tipo}">Aprovar Pedido</button>
+                        <button class="btn-excluir" data-id="${item.id}" data-tipo="${item.tipo}">Excluir</button>
+                    </div>
+                `;
+                
+                // Listener para o botão Recibo (Novo)
+                li.querySelector('.btn-recibo').addEventListener('click', () => {
+                    abrirModalRecibo(item);
+                });
+                
+                li.querySelector('.btn-aprovar').addEventListener('click', () => {
+                    const { id: _, ...dadosParaAprovar } = item;
+                    aprovarItem(item.id, dadosParaAprovar, li, pedidosRef, pedidosPendentesRef);
+                });
+            }
+
+            // Listener para Excluir
+            li.querySelector('.btn-excluir').addEventListener('click', (e) => {
+                const id = e.target.dataset.id;
+                const tipo = e.target.dataset.tipo;
+                const nomeCliente = tipo === 'Visita' ? item.clienteNome : (item.cliente ? item.cliente.nome : 'Cliente Desconhecido');
+                excluirItem(id, nomeCliente, li, tipo);
+            });
+
+            listaPendentes.appendChild(li);
+        }
+
+        // Função genérica para Aprovar (mantida)
+        async function aprovarItem(id, dadosItem, elementoLi, refDestino, refOrigem) {
+            const nomeItem = dadosItem.tipo === 'Visita' ? 'Ficha de Visita' : 'Pedido PDV';
+            const nomeCliente = dadosItem.clienteNome || (dadosItem.cliente ? dadosItem.cliente.nome : 'Cliente'); 
+            
+            if (!confirm(`Tem certeza que deseja APROVAR o ${nomeItem} de ${nomeCliente}?`)) {
+                return;
+            }
+
+            const btn = elementoLi.querySelector('.btn-aprovar');
+            const btnExcluir = elementoLi.querySelector('.btn-excluir');
+
+            btn.disabled = true;
+            btnExcluir.disabled = true;
+            btn.textContent = 'Aprovando...';
+
+            try {
+                // 1. Salva no nó final
+                await push(refDestino, {
+                    ...dadosItem,
+                    dataAprovacao: new Date().toISOString().split('T')[0],
+                    status: 'Aprovado'
+                }); 
+
+                // 2. Remove do nó de pendentes
+                const pendenteRef = ref(database, `${refOrigem.key}/${id}`);
+                await remove(pendenteRef); 
+                
+                // 3. Feedback visual
+                elementoLi.style.transition = '0.5s';
+                elementoLi.style.opacity = '0';
+                setTimeout(() => {
+                    elementoLi.remove();
+                    carregarTodosPendentes(); 
+                }, 500);
+
+            } catch (e) {
+                console.error(`Falha na aprovação do ${nomeItem}: `, e);
+                alert(`Falha na aprovação do ${nomeItem}. Tente novamente.`);
+                btn.disabled = false;
+                btnExcluir.disabled = false;
+                btn.textContent = `Aprovar ${dadosItem.tipo === 'Visita' ? 'Visita' : 'Pedido'}`;
+            }
+        }
+        
+        // Função genérica para Excluir (mantida)
+        async function excluirItem(id, clienteNome, elementoLi, tipo) {
+            const nomeItem = tipo === 'Visita' ? 'Ficha de Visita' : 'Pedido PDV';
+            const refOrigem = tipo === 'Visita' ? visitasPendentesRef : pedidosPendentesRef;
+            
+            if (!confirm(`ATENÇÃO: Tem certeza que deseja EXCLUIR permanentemente o ${nomeItem} de ${clienteNome}? Esta ação não pode ser desfeita.`)) {
+                return;
+            }
+            
+            const btnExcluir = elementoLi.querySelector('.btn-excluir');
+            const btnAprovar = elementoLi.querySelector('.btn-aprovar');
+
+            btnExcluir.disabled = true;
+            btnAprovar.disabled = true;
+            btnExcluir.textContent = 'Excluindo...';
+
+            try {
+                // Remove o item do nó de pendentes
+                const pendenteRef = ref(database, `${refOrigem.key}/${id}`);
+                await remove(pendenteRef); 
+                
+                // Feedback visual
+                elementoLi.style.transition = '0.5s';
+                elementoLi.style.opacity = '0';
+                setTimeout(() => {
+                    elementoLi.remove();
+                    carregarTodosPendentes(); 
+                    alert(`${nomeItem} de ${clienteNome} excluído com sucesso!`);
+                }, 500);
+
+            } catch (e) {
+                console.error(`Falha na exclusão do ${nomeItem}: `, e);
+                alert(`Falha na exclusão do ${nomeItem}. Tente novamente.`);
+                btnExcluir.disabled = false;
+                btnAprovar.disabled = false;
+                btnExcluir.textContent = 'Excluir';
+            }
+        }
+        
+        // --- FUNÇÕES DE RECIBO (NOVO) ---
+        
+        function gerarConteudoRecibo(pedido) {
+            const data = new Date(pedido.timestamp).toLocaleDateString('pt-BR');
+            const hora = new Date(pedido.timestamp).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            const nomeCliente = pedido.cliente && pedido.cliente.nome ? pedido.cliente.nome : 'Consumidor Final';
+            const valorTotal = (typeof pedido.total === 'number' ? pedido.total.toFixed(2).replace('.', ',') : '0,00');
+            
+            let recibo = `
+========================================
+       RECIBO DE VENDA - TOMAZELA
+========================================
+Data/Hora: ${data} às ${hora}
+Cliente: ${nomeCliente}
+----------------------------------------
+PRODUTOS/SERVIÇOS:
+
+`;
+            // Lista de Itens
+            pedido.itens.forEach(item => {
+                const precoUn = (typeof item.precoTotal === 'number' ? item.precoTotal.toFixed(2).replace('.', ',') : '0,00');
+                const precoTotalItem = (item.precoTotal * item.quantidade).toFixed(2).replace('.', ',');
+                recibo += `${item.quantidade}x ${item.nome}\n`;
+                recibo += `  R$ ${precoUn} un. | Total: R$ ${precoTotalItem}\n`;
+            });
+            
+            // Rodapé
+            recibo += `
+----------------------------------------
+TOTAL: R$ ${valorTotal}
+Pagamento: ${pedido.pagamento}
+Observações: ${pedido.observacoes || 'Nenhuma.'}
+========================================
+`;
+            return recibo;
+        }
+
+        function abrirModalRecibo(pedido) {
+            pedidoAtualParaRecibo = pedido;
+            reciboContent.textContent = gerarConteudoRecibo(pedido);
+            reciboModal.style.display = 'block';
+        }
+
+        window.fecharModal = function() {
+            reciboModal.style.display = 'none';
+            pedidoAtualParaRecibo = null;
+        }
+
+        window.enviarWhatsApp = function() {
+            if (!pedidoAtualParaRecibo) return;
+            
+            const mensagem = encodeURIComponent(gerarConteudoRecibo(pedidoAtualParaRecibo));
+            // Abre o WhatsApp Web ou App. O URL pode ser 'api' ou 'web'.
+            // Não incluímos o número do cliente (pedidoAtualParaRecibo.cliente.telefone) pois ele não está no objeto PDV, mas seria o ideal.
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${mensagem}`;
+            
+            window.open(whatsappUrl, '_blank');
+        }
+
+        window.imprimirRecibo = function() {
+            // Usa a função nativa de impressão do navegador, que será formatada pelo CSS @media print
+            window.print();
+        }
+
+    </script>
 </body>
 </html>
