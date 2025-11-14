@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Visitas Salvas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom, #004e92 0%, #000428 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .admin-nav {
+            background: #111827; padding: 12px 20px; margin-bottom: 20px;
+            border-bottom: 2px solid #007bff; display: flex; gap: 10px;
+            align-items: center; flex-wrap: wrap;
+        }
+        .nav-btn {
+            background: #374151; color: #f3f4f6; border: none;
+            padding: 10px 15px; border-radius: 8px; font-weight: bold;
+            font-size: 0.9rem; cursor: pointer; text-decoration: none; 
+            transition: all 0.3s; font-family: inherit; 
+        }
+        .nav-btn:hover { background: #4b5563; }
+        .nav-btn.active { background: #ffc107; color: #111827; } 
+        .nav-btn.logout { background: #dc2626; color: #fff; margin-left: auto; }
+        .nav-btn.logout:hover { background: #ef4444; }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 2px solid #ffc107; }
+        .header h1 { font-size: 2.5rem; color: #fff; }
+
+        .card-visita {
+            background: #1f2937; padding: 15px; border-radius: 10px;
+            border-left: 5px solid #ffc107;
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 15px;
+        }
+        .visita-info { flex-grow: 1; }
+        .visita-info h3 { color: #fff; margin-bottom: 5px; }
+        .visita-info p { color: #9ca3af; font-size: 0.9rem; margin-bottom: 3px; }
+        .visita-info .servicos { font-weight: bold; color: #10b981; }
+        
+        .actions-box { 
+            display: flex; flex-direction: column; align-items: flex-end; gap: 8px; 
+            min-width: 120px;
+        }
+        
+        .btn-excluir-visita {
+            background: #dc2626; color: #fff; border: none; padding: 8px 12px;
+            border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.3s;
+            width: 100%;
+        }
+        .btn-excluir-visita:hover { background: #ef4444; }
+        .btn-excluir-visita:disabled { background: #4b5563; cursor: not-allowed; }
+
+        #msg-status { text-align: center; color: #fff; margin-top: 20px; }
+        #visitas-lista { list-style: none; padding: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-nav">
+        <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
+        <a href="produtos.html" class="nav-btn">📦 Produtos</a>
+        <a href="clientes.html" class="nav-btn">👥 Clientes</a>
+        <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
+        <a href="servicos_do_dia.html" class="nav-btn">📋 Serviços do Dia</a>
+        <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
+        <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
+        <a href="pedidos_finalizados.html" class="nav-btn">💰 Pedidos Finalizados</a>
+        <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
+        <a href="gerenciar_visitas.html" class="nav-btn active">🛠️ Gerenciar Visitas</a>
+        <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🛠️ Gerenciar Visitas Salvas</h1>
+            <p style="font-size: 1.2rem; color: #ffc107;">Exclusão de Visitas Salvas (Apenas para Correção)</p>
+        </div>
+
+        <p id="msg-status">Carregando visitas...</p>
+        <ul id="visitas-lista">
+            </ul>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+
+        // Assuma que você está usando a mesma configuração
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
+            authDomain: "tomazela-piscinas.firebaseapp.com",
+            databaseURL: "https://tomazela-piscinas-default-rtdb.firebaseio.com", 
+            projectId: "tomazela-piscinas",
+            storageBucket: "tomazela-piscinas.firebasestorage.app", 
+            messagingSenderId: "776818671387",
+            appId: "1:776818671387:web:ca4211e6fa8f3f1c889dbe",
+            measurementId: "G-PP230KYC4X"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        
+        const visitasRef = ref(database, 'visitas'); 
+        
+        const visitasLista = document.getElementById('visitas-lista');
+        const msgStatus = document.getElementById('msg-status');
+
+        // --- VIGIA E LOGOUT ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Chama a função de carregamento somente após a autenticação
+                carregarVisitas();
+            } else {
+                window.location.href = 'login_piscina.html';
+            }
+        });
+        
+        const logoutBtn = document.getElementById('logout-btn');
+        logoutBtn.addEventListener('click', () => {
+            if (confirm("Tem certeza que deseja sair?")) {
+                signOut(auth);
+            }
+        });
+
+        // --- LÓGICA PRINCIPAL DE CARREGAMENTO ---
+        
+        async function carregarVisitas() {
+            msgStatus.textContent = "Buscando todas as visitas salvas...";
+            visitasLista.innerHTML = '';
+            
+            try {
+                const snapshot = await get(visitasRef);
+                let visitasSalvas = [];
+
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        visitasSalvas.push({ id: child.key, ...child.val() });
+                    });
+                }
+                
+                visitasSalvas.sort((a, b) => b.timestamp - a.timestamp);
+
+                if (visitasSalvas.length > 0) {
+                    renderizarVisitas(visitasSalvas);
+                    msgStatus.textContent = `${visitasSalvas.length} visitas salvas encontradas.`;
+                } else {
+                    msgStatus.textContent = "Nenhuma visita salva encontrada.";
+                }
+
+            } catch (error) {
+                console.error("Erro ao carregar visitas (ERRO DE PERMISSÃO): ", error);
+                msgStatus.textContent = "❌ Erro ao carregar visitas. Verifique as Regras de Leitura (READ) do Firebase para o nó '/visitas'.";
+            }
+        }
+
+        // ⭐ FUNÇÃO CORRIGIDA CONTRA INVALID DATE ⭐
+        function renderizarVisitas(visitas) {
+            visitas.forEach(visita => {
+                
+                // 1. Tratamento da Data da Visita (YYYY-MM-DD)
+                let dataVisitaFormatada = 'Data Indefinida';
+                if (visita.dataVisita) {
+                    const dataObj = new Date(visita.dataVisita + 'T00:00:00');
+                    if (!isNaN(dataObj.getTime())) {
+                        dataVisitaFormatada = dataObj.toLocaleDateString('pt-BR');
+                    }
+                }
+                
+                // 2. Tratamento da Data de Registro (timestamp)
+                let dataRegistroFormatada = 'Registro Indefinido';
+                if (visita.timestamp) {
+                     const registroObj = new Date(visita.timestamp);
+                     if (!isNaN(registroObj.getTime())) {
+                        dataRegistroFormatada = registroObj.toLocaleDateString('pt-BR') + ' ' + 
+                                                registroObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    }
+                }
+                
+                const servicos = visita.servicos ? visita.servicos.join(', ') : 'Nenhum';
+
+                const li = document.createElement('li');
+                li.className = 'card-visita';
+                li.id = `visita-${visita.id}`; 
+
+                li.innerHTML = `
+                    <div class="visita-info">
+                        <h3>Cliente: ${visita.clienteNome || 'Cliente Não Encontrado'}</h3>
+                        <p>Visita em: ${dataVisitaFormatada} | Registrado em: ${dataRegistroFormatada}</p>
+                        <p>Parâmetros: pH ${visita.ph || '-'} / Alc. ${visita.alcalinidade || '-'} / Cloro ${visita.cloro || '-'}</p>
+                        <p>Serviços: <span class="servicos">${servicos}</span></p>
+                        <p>Produtos Usados: ${visita.produtos || 'Nenhum'}</p>
+                        <p>Obs: ${visita.observacoes || 'Nenhuma.'}</p>
+                    </div>
+                    <div class="actions-box">
+                        <button class="btn-excluir-visita" data-id="${visita.id}">Excluir</button>
+                    </div>
+                `;
+                
+                li.querySelector('.btn-excluir-visita').addEventListener('click', (e) => {
+                    const id = e.target.dataset.id;
+                    // Passa a data formatada para o alerta de confirmação
+                    excluirVisita(id, visita.clienteNome, dataVisitaFormatada); 
+                });
+
+                visitasLista.appendChild(li);
+            });
+        }
+        
+        // --- FUNÇÃO DE EXCLUSÃO ---
+        async function excluirVisita(visitaId, clienteNome, dataVisita) {
+            if (!confirm(`Tem certeza que deseja EXCLUIR permanentemente a visita de ${clienteNome} na data ${dataVisita}? \n\nEsta ação é IRREVERSÍVEL.`)) {
+                return;
+            }
+
+            const elementoLi = document.getElementById(`visita-${visitaId}`);
+            const btn = elementoLi.querySelector('.btn-excluir-visita');
+            
+            btn.disabled = true;
+            btn.textContent = 'Excluindo...';
+
+            try {
+                // Remove do nó principal '/visitas'
+                const visitaParaExcluirRef = ref(database, `visitas/${visitaId}`);
+                await remove(visitaParaExcluirRef); 
+                
+                // Feedback visual
+                elementoLi.style.transition = '0.5s';
+                elementoLi.style.opacity = '0';
+                
+                setTimeout(() => {
+                    elementoLi.remove();
+                    carregarVisitas(); 
+                    alert(`Visita excluída com sucesso!`);
+                }, 500);
+
+            } catch (e) {
+                console.error("Falha na exclusão da visita: ", e);
+                alert("Falha na exclusão. Verifique suas regras de WRITE do Firebase para o nó '/visitas'.");
+                btn.disabled = false;
+                btn.textContent = 'Excluir';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos Finalizados - Vendas Rápidas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom, #004e92 0%, #000428 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .admin-nav {
+            background: #111827; padding: 12px 20px; margin-bottom: 20px;
+            border-bottom: 2px solid #007bff; display: flex; gap: 10px;
+            align-items: center; flex-wrap: wrap;
+        }
+        .nav-btn {
+            background: #374151; color: #f3f4f6; border: none;
+            padding: 10px 15px; border-radius: 8px; font-weight: bold;
+            font-size: 0.9rem; cursor: pointer; text-decoration: none; 
+            transition: all 0.3s; font-family: inherit; 
+        }
+        .nav-btn:hover { background: #4b5563; }
+        .nav-btn.active { background: #00bfff; color: #fff; } 
+        .nav-btn.logout { background: #dc2626; color: #fff; margin-left: auto; }
+        .nav-btn.logout:hover { background: #ef4444; }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 2px solid #00bfff; }
+        .header h1 { font-size: 2.5rem; color: #fff; }
+
+        /* Estilos da Lista de Pedidos */
+        #pedidos-lista {
+            list-style: none; padding: 0; display: grid; gap: 15px;
+        }
+        .card-pedido {
+            background: #1f2937; padding: 15px; border-radius: 10px;
+            border-left: 5px solid #00bfff;
+            display: flex; justify-content: space-between;
+            align-items: center;
+        }
+        .pedido-info { flex-grow: 1; }
+        .pedido-info h3 { color: #fff; margin-bottom: 5px; }
+        .pedido-info p { color: #9ca3af; font-size: 0.9rem; margin-bottom: 3px; }
+        .actions-box { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-end; 
+            gap: 8px; 
+            min-width: 150px;
+        }
+        .total-box .valor { font-size: 1.5rem; font-weight: bold; color: #10b981; }
+        .total-box .pagamento { font-size: 0.9rem; color: #fff; }
+        
+        /* ⭐ NOVO ESTILO: Botão Excluir ⭐ */
+        .btn-excluir-finalizado {
+            background: #dc2626; /* Vermelho */
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        .btn-excluir-finalizado:hover {
+            background: #ef4444;
+        }
+        .btn-excluir-finalizado:disabled {
+            background: #4b5563;
+            cursor: not-allowed;
+        }
+
+        /* Mensagem de Status */
+        #msg-status { text-align: center; color: #fff; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-nav">
+        <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
+        <a href="produtos.html" class="nav-btn">📦 Produtos</a>
+        <a href="clientes.html" class="nav-btn">👥 Clientes</a>
+        <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
+        <a href="servicos_do_dia.html" class="nav-btn">📋 Serviços do Dia</a>
+        <a href="empresa.html" class="nav-btn">🏢 Empresa</a>
+        <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
+        <a href="pedidos_finalizados.html" class="nav-btn active">💰 Pedidos Finalizados</a>
+        <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
+        <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>💰 Pedidos de Venda Rápida Finalizados</h1>
+            <p id="total-vendas" style="font-size: 1.2rem; color: #10b981;">Total de Vendas: R$ 0,00</p>
+        </div>
+
+        <p id="msg-status">Carregando pedidos...</p>
+        <ul id="pedidos-lista">
+            </ul>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        // Importa a função 'remove'
+        import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
+            authDomain: "tomazela-piscinas.firebaseapp.com",
+            databaseURL: "https://tomazela-piscinas-default-rtdb.firebaseio.com", 
+            projectId: "tomazela-piscinas",
+            storageBucket: "tomazela-piscinas.firebasestorage.app", 
+            messagingSenderId: "776818671387",
+            appId: "1:776818671387:web:ca4211e6fa8f3f1c889dbe",
+            measurementId: "G-PP230KYC4X"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        
+        // NÓ PRINCIPAL: Lê todos os pedidos aprovados
+        const pedidosRef = ref(database, 'pedidos'); 
+        
+        const pedidosLista = document.getElementById('pedidos-lista');
+        const msgStatus = document.getElementById('msg-status');
+        const totalVendas = document.getElementById('total-vendas');
+
+        // --- VIGIA E LOGOUT ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                carregarPedidosFinalizados();
+            } else {
+                window.location.href = 'login_piscina.html';
+            }
+        });
+        
+        const logoutBtn = document.getElementById('logout-btn');
+        logoutBtn.addEventListener('click', () => {
+            if (confirm("Tem certeza que deseja sair?")) {
+                signOut(auth);
+            }
+        });
+
+        // --- LÓGICA PRINCIPAL ---
+        
+        async function carregarPedidosFinalizados() {
+            msgStatus.textContent = "Buscando vendas rápidas aprovadas...";
+            pedidosLista.innerHTML = '';
+            
+            try {
+                const snapshot = await get(pedidosRef);
+                let vendasRapidas = [];
+                let somaTotal = 0;
+
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        const pedido = child.val();
+                        // Filtra: Apenas PDV e exclui Mensalidades
+                        if (pedido.tipo === 'PDV' && !pedido.pagamento.includes('Mensalidade')) {
+                            // Adicionamos a chave do Firebase (id)
+                            vendasRapidas.push({ id: child.key, ...pedido });
+                            somaTotal += pedido.total || 0;
+                        }
+                    });
+                }
+                
+                // Ordena pelo timestamp (mais recente primeiro)
+                vendasRapidas.sort((a, b) => b.timestamp - a.timestamp);
+
+                if (vendasRapidas.length > 0) {
+                    renderizarPedidos(vendasRapidas);
+                    msgStatus.textContent = `${vendasRapidas.length} pedidos de venda rápida encontrados.`;
+                    totalVendas.textContent = `Total de Vendas Registradas: R$ ${somaTotal.toFixed(2).replace('.', ',')}`;
+                } else {
+                    msgStatus.textContent = "Nenhuma venda rápida aprovada encontrada.";
+                    totalVendas.textContent = "Total de Vendas: R$ 0,00";
+                }
+
+            } catch (error) {
+                console.error("Erro ao carregar pedidos: ", error);
+                msgStatus.textContent = "❌ Erro ao carregar pedidos. Verifique as Regras de Permissão do Firebase.";
+                totalVendas.textContent = "Total de Vendas: R$ 0,00";
+            }
+        }
+
+        function renderizarPedidos(pedidos) {
+            pedidos.forEach(pedido => {
+                const nomeCliente = pedido.cliente && pedido.cliente.nome ? pedido.cliente.nome : 'Consumidor Final';
+                const dataPedido = new Date(pedido.timestamp).toLocaleDateString('pt-BR') + ' ' + 
+                                   new Date(pedido.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const valorFormatado = (typeof pedido.total === 'number' ? pedido.total.toFixed(2).replace('.', ',') : '0,00');
+                const itensDetalhe = pedido.itens.map(i => `${i.nome} (${i.quantidade}x)`).join(', ');
+
+                const li = document.createElement('li');
+                li.className = 'card-pedido';
+                li.id = `pedido-${pedido.id}`; // Define um ID para facilitar a remoção
+
+                li.innerHTML = `
+                    <div class="pedido-info">
+                        <h3>${nomeCliente}</h3>
+                        <p>Data: ${dataPedido}</p>
+                        <p>Itens: ${itensDetalhe}</p>
+                        <p>Obs: ${pedido.observacoes || 'Nenhuma.'}</p>
+                    </div>
+                    <div class="actions-box">
+                        <div class="total-box">
+                            <span class="pagamento">${pedido.pagamento}</span>
+                            <div class="valor">R$ ${valorFormatado}</div>
+                        </div>
+                        <button class="btn-excluir-finalizado" data-id="${pedido.id}">Excluir</button>
+                    </div>
+                `;
+                
+                // Adiciona o listener de exclusão
+                li.querySelector('.btn-excluir-finalizado').addEventListener('click', (e) => {
+                    const id = e.target.dataset.id;
+                    excluirPedido(id, nomeCliente, pedido.total);
+                });
+
+                pedidosLista.appendChild(li);
+            });
+        }
+        
+        // ⭐ NOVA FUNÇÃO: Excluir Pedido Finalizado ⭐
+        async function excluirPedido(pedidoId, clienteNome, valorTotal) {
+            if (!confirm(`Tem certeza que deseja EXCLUIR permanentemente a venda de R$ ${valorTotal.toFixed(2).replace('.', ',')} para ${clienteNome}? \n\nEsta ação deve ser usada apenas para correção de erros e é IRREVERSÍVEL.`)) {
+                return;
+            }
+
+            const elementoLi = document.getElementById(`pedido-${pedidoId}`);
+            const btn = elementoLi.querySelector('.btn-excluir-finalizado');
+            
+            btn.disabled = true;
+            btn.textContent = 'Excluindo...';
+
+            try {
+                // Remove do nó principal '/pedidos'
+                const pedidoParaExcluirRef = ref(database, `pedidos/${pedidoId}`);
+                await remove(pedidoParaExcluirRef); 
+                
+                // Feedback visual
+                elementoLi.style.transition = '0.5s';
+                elementoLi.style.opacity = '0';
+                
+                setTimeout(() => {
+                    elementoLi.remove();
+                    // Recarrega a lista para atualizar o total de vendas
+                    carregarPedidosFinalizados(); 
+                    alert(`Venda excluída com sucesso!`);
+                }, 500);
+
+            } catch (e) {
+                console.error("Falha na exclusão da venda: ", e);
+                alert("Falha na exclusão. Verifique suas regras de WRITE do Firebase para o nó '/pedidos'.");
+                btn.disabled = false;
+                btn.textContent = 'Excluir';
+            }
+        }
+    </script>
+</body>
+</html>
