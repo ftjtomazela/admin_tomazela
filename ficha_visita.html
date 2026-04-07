@@ -30,10 +30,9 @@
             transition: all 0.3s; font-family: inherit; 
         }
         .nav-btn:hover { background: #4b5563; }
-        .nav-btn.active { background: #f59e0b; color: #fff; } /* Laranja Visita */
+        .nav-btn.active { background: #f59e0b; color: #fff; }
         .nav-btn.logout { background: #dc2626; color: #fff; margin-left: auto; }
         .nav-btn.logout:hover { background: #ef4444; }
-        /* --- FIM DA NAV --- */
 
         .container {
             max-width: 800px;
@@ -113,19 +112,6 @@
             border-radius: 8px;
             border: 2px dashed #4b5563;
         }
-        .upload-group label {
-            color: #9ca3af;
-        }
-        .upload-group input[type="file"]:disabled {
-            cursor: not-allowed;
-        }
-        /* Mensagem de "Inativo" */
-        .inactive-msg {
-            font-size: 0.85rem;
-            color: #f59e0b; /* Laranja */
-            text-align: center;
-            margin-top: 10px;
-        }
 
         .btn-save {
             width: 100%;
@@ -148,23 +134,23 @@
 <body>
 
     <div class="admin-nav">
-    <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
-    <a href="clientes.html" class="nav-btn">👥 Clientes</a>
-    <a href="produtos.html" class="nav-btn">📦 Produtos</a>
-    
-    <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
-    <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
+        <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
+        <a href="clientes.html" class="nav-btn">👥 Clientes</a>
+        <a href="produtos.html" class="nav-btn">📦 Produtos</a>
+        
+        <a href="ficha_visita.html" class="nav-btn active">📝 Ficha de Visita</a>
+        <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
 
-    <a href="servicos_do_dia.html" class="nav-btn">📋 Aprovação/Serviços</a>
-    <a href="pedidos_finalizados.html" class="nav-btn">💰 Pedidos Finalizados</a>
-    <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
-    <a href="recebimentos.html" class="nav-btn">💲 Recebimentos</a>
-    
-    <a href="gerenciar_visitas.html" class="nav-btn">🛠️ Gerenciar Visitas</a>
-    <a href="empresa.html" class="nav-btn">🏢 Configurações</a>
-    
-    <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
-</div>
+        <a href="servicos_do_dia.html" class="nav-btn">📋 Aprovação/Serviços</a>
+        <a href="pedidos_finalizados.html" class="nav-btn">💰 Pedidos Finalizados</a>
+        <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
+        <a href="recebimentos.html" class="nav-btn">💲 Recebimentos</a>
+        
+        <a href="gerenciar_visitas.html" class="nav-btn">🛠️ Gerenciar Visitas</a>
+        <a href="empresa.html" class="nav-btn">🏢 Configurações</a>
+        
+        <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
+    </div>
 
     <div class="container">
         <div class="header">
@@ -201,13 +187,13 @@
                         <label class="checkbox-item">
                             <input type="checkbox" name="servico" value="Aspiração"> Aspiração
                         </label>
-                           <label class="checkbox-item">
+                        <label class="checkbox-item">
                             <input type="checkbox" name="servico" value="Escovação"> Escovação
                         </label>
-                           <label class="checkbox-item">
+                        <label class="checkbox-item">
                             <input type="checkbox" name="servico" value="Limpeza de Bordas"> Limpeza de Bordas
                         </label>
-                           <label class="checkbox-item">
+                        <label class="checkbox-item">
                             <input type="checkbox" name="servico" value="Peneiração"> Peneiração
                         </label>
                         <label class="checkbox-item">
@@ -234,18 +220,12 @@
                     
                     <div style="margin-top: 10px;">
                         <label for="foto-antes" style="color: #fff;">Foto ANTES:</label>
-                        <input type="file" id="foto-antes" class="input-field" disabled>
+                        <input type="file" id="foto-antes" class="input-field" accept="image/*">
                     </div>
                     <div style="margin-top: 10px;">
                         <label for="foto-depois" style="color: #fff;">Foto DEPOIS:</label>
-                        <input type="file" id="foto-depois" class="input-field" disabled>
+                        <input type="file" id="foto-depois" class="input-field" accept="image/*">
                     </div>
-                    
-                    <p class="inactive-msg">
-                        ⚠️ Upload de fotos inativo. 
-                        <br>
-                        Libere o "Firebase Storage" no seu projeto para ativar.
-                    </p>
                 </div>
 
                 <button type="submit" class="btn-save" id="btn-save">Salvar Visita</button>
@@ -255,8 +235,10 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-        import { getDatabase, ref, get, push, remove } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+        import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+        // Importação do Storage adicionada
+        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB_2Ssx3a3CW3PEP2RBh7j5TQl1UPuSg4k",
@@ -272,11 +254,11 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         const auth = getAuth(app);
+        const storage = getStorage(app); // Inicialização do Storage
         
         // Referências
         const clientesRef = ref(database, 'clientes');
-        const visitasRef = ref(database, 'visitas'); 
-        const visitasPendentesRef = ref(database, 'visitas_pendentes'); // PENDENTE
+        const visitasPendentesRef = ref(database, 'visitas_pendentes'); 
         
         // --- VIGIA E LOGOUT ---
         onAuthStateChanged(auth, (user) => {
@@ -328,12 +310,25 @@
             }
         }
         
-        // --- Função de Salvar VISITA PENDENTE ---
+        // --- FUNÇÃO PARA UPLOAD DE FOTOS ---
+        async function uploadFoto(file, caminho) {
+            if (!file) return null; // Se não escolheu foto, retorna null e segue o fluxo
+            
+            // Gera um nome único para o arquivo usando a data atual
+            const nomeArquivo = `visitas/${Date.now()}_${caminho}_${file.name}`;
+            const storageRef = sRef(storage, nomeArquivo);
+            
+            // Faz o upload
+            await uploadBytes(storageRef, file);
+            
+            // Retorna o link de download da imagem salva
+            return await getDownloadURL(storageRef);
+        }
+
+        // --- SALVAR VISITA ---
         async function salvarVisita(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-save');
-            btn.disabled = true;
-            btn.textContent = 'Enviando para Aprovação...'; 
             
             const selectCliente = document.getElementById('select-cliente');
             const clienteId = selectCliente.value;
@@ -341,42 +336,58 @@
             
             if (!clienteId) {
                 alert("Por favor, selecione um cliente.");
-                btn.disabled = false;
-                btn.textContent = 'Salvar Visita';
                 return;
             }
-            
-            const servicosRealizados = [];
-            document.querySelectorAll('input[name="servico"]:checked').forEach(checkbox => {
-                servicosRealizados.push(checkbox.value);
-            });
-            
-            const visitaData = {
-                timestamp: Date.now(), 
-                clienteId: clienteId,
-                clienteNome: clienteNome,
-                dataVisita: document.getElementById('visita-data').value,
-                ph: document.getElementById('visita-ph').value,
-                alcalinidade: document.getElementById('visita-alcalinidade').value,
-                cloro: document.getElementById('visita-cloro').value,
-                servicos: servicosRealizados,
-                produtos: document.getElementById('visita-produtos').value, 
-                observacoes: document.getElementById('visita-obs').value,
-                fotoAntesUrl: null, 
-                fotoDepoisUrl: null 
-            };
+
+            // Desativa o botão e avisa o usuário que está processando o upload
+            btn.disabled = true;
+            btn.textContent = 'Enviando fotos e dados. Aguarde...'; 
             
             try {
+                // 1. Pega os arquivos dos inputs
+                const fileAntes = document.getElementById('foto-antes').files[0];
+                const fileDepois = document.getElementById('foto-depois').files[0];
+
+                // 2. Faz o upload e pega as URLs (se não tiver arquivo, retorna null)
+                const urlAntes = await uploadFoto(fileAntes, "antes");
+                const urlDepois = await uploadFoto(fileDepois, "depois");
+
+                // 3. Prepara os serviços checados
+                const servicosRealizados = [];
+                document.querySelectorAll('input[name="servico"]:checked').forEach(checkbox => {
+                    servicosRealizados.push(checkbox.value);
+                });
+                
+                // 4. Monta o objeto final
+                const visitaData = {
+                    timestamp: Date.now(), 
+                    clienteId: clienteId,
+                    clienteNome: clienteNome,
+                    dataVisita: document.getElementById('visita-data').value,
+                    ph: document.getElementById('visita-ph').value,
+                    alcalinidade: document.getElementById('visita-alcalinidade').value,
+                    cloro: document.getElementById('visita-cloro').value,
+                    servicos: servicosRealizados,
+                    produtos: document.getElementById('visita-produtos').value, 
+                    observacoes: document.getElementById('visita-obs').value,
+                    fotoAntesUrl: urlAntes,  // Salva o link gerado pelo Storage
+                    fotoDepoisUrl: urlDepois // Salva o link gerado pelo Storage
+                };
+                
+                // 5. Salva no Realtime Database
                 await push(visitasPendentesRef, visitaData);
                 
-                alert("Visita enviada para aprovação com sucesso! ✅");
+                alert("Visita e fotos enviadas para aprovação com sucesso! ✅");
                 
+                // Limpa o formulário e reseta a data
                 document.getElementById('visita-form').reset();
                 document.getElementById('visita-data').value = new Date().toISOString().split('T')[0];
-            } catch (e) {
-                console.error("Erro ao salvar visita pendente: ", e);
-                alert(`Erro ao enviar a visita. Verifique as permissões (Rules) do Firebase.`);
+
+            } catch (erro) {
+                console.error("Erro ao salvar visita pendente ou enviar fotos: ", erro);
+                alert(`Erro ao enviar a visita. Verifique as Regras de Segurança (Rules) do Firebase Storage e Database.`);
             } finally {
+                // Devolve o botão ao estado normal
                 btn.disabled = false;
                 btn.textContent = 'Salvar Visita';
             }
@@ -384,5 +395,3 @@
     </script>
 </body>
 </html>
-
-
