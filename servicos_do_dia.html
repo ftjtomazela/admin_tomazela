@@ -42,8 +42,8 @@
         .card-info { flex-grow: 1; padding-right: 15px; } 
         
         .card-actions { 
-            display: flex; flex-direction: column; gap: 8px; /* Coluna para caber mais botões */
-            min-width: 150px; /* Garante que os botões caibam */
+            display: flex; flex-direction: column; gap: 8px;
+            min-width: 150px;
         }
         
         .btn-aprovar {
@@ -60,9 +60,8 @@
         }
         .btn-excluir:hover { background: #ef4444; }
         
-        /* ⭐ NOVOS ESTILOS PARA PDV ⭐ */
         .btn-recibo {
-            background: #007bff; /* Azul para Recibo */
+            background: #007bff;
             color: #fff; border: none;
             padding: 8px 12px; border-radius: 8px; cursor: pointer;
             font-weight: bold; transition: background 0.3s;
@@ -75,25 +74,57 @@
             width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7);
         }
         .modal-content {
-            background-color: #2d3748; margin: 10% auto; padding: 20px;
-            border: 1px solid #4b5563; width: 80%; max-width: 500px;
+            background-color: #2d3748; margin: 5% auto; padding: 20px;
+            border: 1px solid #4b5563; width: 90%; max-width: 550px;
             border-radius: 12px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .modal-content h2 { color: #007bff; margin-bottom: 15px; }
-        .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+        .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
         .close-btn:hover, .close-btn:focus { color: #fff; text-decoration: none; cursor: pointer; }
         
-        /* Estilo da "Notinha" */
-        #recibo-content { 
-            background: #fff; color: #000; padding: 15px; border-radius: 8px; 
-            font-family: monospace; font-size: 0.85rem; line-height: 1.4;
-            white-space: pre-wrap; /* Mantém a formatação de nova linha */
+        /* Estilo do Recibo para captura de imagem */
+        #recibo-wrapper {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
         }
         
-        .recibo-actions { margin-top: 15px; display: flex; gap: 10px; }
-        .recibo-actions button { padding: 10px; border-radius: 8px; cursor: pointer; }
-        .btn-whatsapp { background: #25d366; color: #fff; border: none; }
-        .btn-print { background: #6c757d; color: #fff; border: none; }
+        #recibo-content { 
+            color: #000; 
+            font-family: 'Courier New', monospace; 
+            font-size: 0.85rem; 
+            line-height: 1.6;
+            white-space: pre-wrap;
+            background: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            user-select: text;
+        }
+        
+        .recibo-actions { 
+            margin-top: 15px; 
+            display: flex; 
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .recibo-actions button { 
+            padding: 10px 15px; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            flex: 1;
+            min-width: 120px;
+        }
+        .btn-whatsapp { background: #25d366; color: #fff; }
+        .btn-whatsapp:hover { background: #1da851; }
+        .btn-print { background: #6c757d; color: #fff; }
+        .btn-print:hover { background: #5a6268; }
+        .btn-png { background: #ff6b35; color: #fff; }
+        .btn-png:hover { background: #e55a2b; }
         
         /* Esconde a interface de admin ao imprimir */
         @media print {
@@ -110,6 +141,43 @@
                 white-space: pre-wrap;
             }
         }
+
+        /* Loading para download */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .loading-overlay.active {
+            display: flex;
+        }
+        .loading-spinner {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            color: #000;
+            text-align: center;
+        }
+        .loading-spinner .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -117,18 +185,14 @@
     <a href="admin_piscina.html" class="nav-btn">🏠 Painel</a>
     <a href="clientes.html" class="nav-btn">👥 Clientes</a>
     <a href="produtos.html" class="nav-btn">📦 Produtos</a>
-    
     <a href="ficha_visita.html" class="nav-btn">📝 Ficha de Visita</a>
     <a href="pdv_piscina.html" class="nav-btn">✍️ PDV</a>
-
     <a href="servicos_do_dia.html" class="nav-btn">📋 Aprovação/Serviços</a>
     <a href="pedidos_finalizados.html" class="nav-btn">💰 Pedidos Finalizados</a>
     <a href="faturamento.html" class="nav-btn">💲 Faturamento</a>
     <a href="recebimentos.html" class="nav-btn">💲 Recebimentos</a>
-    
     <a href="gerenciar_visitas.html" class="nav-btn">🛠️ Gerenciar Visitas</a>
     <a href="empresa.html" class="nav-btn">🏢 Configurações</a>
-    
     <button id="logout-btn" class="nav-btn logout">Sair ➔</button>
 </div>
 
@@ -145,19 +209,26 @@
     <div id="reciboModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="fecharModal()">&times;</span>
-            <h2>Recibo de Venda</h2>
-            <div id="recibo-content">
-                </div>
+            <h2>🧾 Recibo de Venda</h2>
+            <div id="recibo-wrapper">
+                <div id="recibo-content"></div>
+            </div>
             <div class="recibo-actions">
-                <button class="btn-whatsapp" onclick="enviarWhatsApp()">
-                    <img src="whatsapp_icon.png" style="width: 20px; vertical-align: middle;"> Enviar WhatsApp
-                </button>
-                <button class="btn-print" onclick="imprimirRecibo()">
-                    Imprimir
-                </button>
+                <button class="btn-whatsapp" onclick="enviarWhatsApp()">📱 WhatsApp</button>
+                <button class="btn-png" onclick="baixarPNG()">📷 Baixar PNG</button>
+                <button class="btn-print" onclick="imprimirRecibo()">🖨️ Imprimir</button>
             </div>
         </div>
     </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Gerando imagem...</p>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
         import { getDatabase, ref, get, push, remove } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
@@ -178,21 +249,19 @@
         const database = getDatabase(app);
         const auth = getAuth(app);
         
-        // Referências
         const visitasRef = ref(database, 'visitas'); 
         const visitasPendentesRef = ref(database, 'visitas_pendentes'); 
         const pedidosRef = ref(database, 'pedidos'); 
         const pedidosPendentesRef = ref(database, 'pedidos_pendentes'); 
 
-        // Elementos DOM
         const listaPendentes = document.getElementById('lista-pendentes');
         const msgStatus = document.getElementById('msg-status');
         const reciboContent = document.getElementById('recibo-content');
         const reciboModal = document.getElementById('reciboModal');
+        const loadingOverlay = document.getElementById('loadingOverlay');
         
-        let pedidoAtualParaRecibo = null; // Variável global para armazenar o pedido
+        let pedidoAtualParaRecibo = null;
 
-        // --- VIGIA E LOGOUT ---
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 carregarTodosPendentes();
@@ -207,8 +276,6 @@
                 signOut(auth);
             }
         });
-        
-        // --- FUNÇÕES DE LÓGICA DE DADOS ---
 
         async function carregarTodosPendentes() {
             msgStatus.textContent = "Carregando itens pendentes...";
@@ -216,7 +283,6 @@
             try {
                 let todosPendentes = [];
                 
-                // Carrega Visitas Pendentes
                 const visitasSnapshot = await get(visitasPendentesRef);
                 if (visitasSnapshot.exists()) {
                     visitasSnapshot.forEach(child => {
@@ -224,7 +290,6 @@
                     });
                 }
                 
-                // Carrega Pedidos Pendentes
                 const pedidosSnapshot = await get(pedidosPendentesRef);
                 if (pedidosSnapshot.exists()) {
                     pedidosSnapshot.forEach(child => {
@@ -306,7 +371,6 @@
                     </div>
                 `;
                 
-                // Listener para o botão Recibo (Novo)
                 li.querySelector('.btn-recibo').addEventListener('click', () => {
                     abrirModalRecibo(item);
                 });
@@ -317,7 +381,6 @@
                 });
             }
 
-            // Listener para Excluir
             li.querySelector('.btn-excluir').addEventListener('click', (e) => {
                 const id = e.target.dataset.id;
                 const tipo = e.target.dataset.tipo;
@@ -328,7 +391,6 @@
             listaPendentes.appendChild(li);
         }
 
-        // Função genérica para Aprovar (mantida)
         async function aprovarItem(id, dadosItem, elementoLi, refDestino, refOrigem) {
             const nomeItem = dadosItem.tipo === 'Visita' ? 'Ficha de Visita' : 'Pedido PDV';
             const nomeCliente = dadosItem.clienteNome || (dadosItem.cliente ? dadosItem.cliente.nome : 'Cliente'); 
@@ -345,18 +407,15 @@
             btn.textContent = 'Aprovando...';
 
             try {
-                // 1. Salva no nó final
                 await push(refDestino, {
                     ...dadosItem,
                     dataAprovacao: new Date().toISOString().split('T')[0],
                     status: 'Aprovado'
                 }); 
 
-                // 2. Remove do nó de pendentes
                 const pendenteRef = ref(database, `${refOrigem.key}/${id}`);
                 await remove(pendenteRef); 
                 
-                // 3. Feedback visual
                 elementoLi.style.transition = '0.5s';
                 elementoLi.style.opacity = '0';
                 setTimeout(() => {
@@ -373,7 +432,6 @@
             }
         }
         
-        // Função genérica para Excluir (mantida)
         async function excluirItem(id, clienteNome, elementoLi, tipo) {
             const nomeItem = tipo === 'Visita' ? 'Ficha de Visita' : 'Pedido PDV';
             const refOrigem = tipo === 'Visita' ? visitasPendentesRef : pedidosPendentesRef;
@@ -390,11 +448,9 @@
             btnExcluir.textContent = 'Excluindo...';
 
             try {
-                // Remove o item do nó de pendentes
                 const pendenteRef = ref(database, `${refOrigem.key}/${id}`);
                 await remove(pendenteRef); 
                 
-                // Feedback visual
                 elementoLi.style.transition = '0.5s';
                 elementoLi.style.opacity = '0';
                 setTimeout(() => {
@@ -412,7 +468,7 @@
             }
         }
         
-        // --- FUNÇÕES DE RECIBO (NOVO) ---
+        // --- FUNÇÕES DE RECIBO ---
         
         function gerarConteudoRecibo(pedido) {
             const data = new Date(pedido.timestamp).toLocaleDateString('pt-BR');
@@ -430,7 +486,6 @@ Cliente: ${nomeCliente}
 PRODUTOS/SERVIÇOS:
 
 `;
-            // Lista de Itens
             pedido.itens.forEach(item => {
                 const precoUn = (typeof item.precoTotal === 'number' ? item.precoTotal.toFixed(2).replace('.', ',') : '0,00');
                 const precoTotalItem = (item.precoTotal * item.quantidade).toFixed(2).replace('.', ',');
@@ -438,7 +493,6 @@ PRODUTOS/SERVIÇOS:
                 recibo += `  R$ ${precoUn} un. | Total: R$ ${precoTotalItem}\n`;
             });
             
-            // Rodapé
             recibo += `
 ----------------------------------------
 TOTAL: R$ ${valorTotal}
@@ -464,20 +518,72 @@ Observações: ${pedido.observacoes || 'Nenhuma.'}
             if (!pedidoAtualParaRecibo) return;
             
             const mensagem = encodeURIComponent(gerarConteudoRecibo(pedidoAtualParaRecibo));
-            // Abre o WhatsApp Web ou App. O URL pode ser 'api' ou 'web'.
-            // Não incluímos o número do cliente (pedidoAtualParaRecibo.cliente.telefone) pois ele não está no objeto PDV, mas seria o ideal.
             const whatsappUrl = `https://api.whatsapp.com/send?text=${mensagem}`;
-            
             window.open(whatsappUrl, '_blank');
         }
 
         window.imprimirRecibo = function() {
-            // Usa a função nativa de impressão do navegador, que será formatada pelo CSS @media print
             window.print();
+        }
+
+        // --- NOVA FUNÇÃO: BAIXAR PNG ---
+        window.baixarPNG = async function() {
+            if (!pedidoAtualParaRecibo) return;
+
+            const wrapper = document.getElementById('recibo-wrapper');
+            const loading = document.getElementById('loadingOverlay');
+            
+            try {
+                loading.classList.add('active');
+                
+                // Importa html2canvas
+                const html2canvas = (await import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.esm.js')).default;
+                
+                // Configuração para capturar com alta qualidade
+                const canvas = await html2canvas(wrapper, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    width: wrapper.scrollWidth,
+                    height: wrapper.scrollHeight
+                });
+                
+                // Cria o link para download
+                const link = document.createElement('a');
+                const dataAtual = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+                link.download = `recibo_${dataAtual}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+            } catch (error) {
+                console.error('Erro ao gerar PNG:', error);
+                alert('Erro ao gerar a imagem. Tente novamente ou use a função de impressão.');
+            } finally {
+                loading.classList.remove('active');
+            }
+        }
+
+        // Permite clicar com o botão direito e salvar como PNG
+        document.addEventListener('contextmenu', function(e) {
+            const modal = document.getElementById('reciboModal');
+            if (modal.style.display === 'block') {
+                const reciboContent = document.getElementById('recibo-content');
+                if (reciboContent.contains(e.target)) {
+                    e.preventDefault();
+                    baixarPNG();
+                }
+            }
+        });
+
+        // Fecha modal ao clicar fora
+        window.onclick = function(event) {
+            const modal = document.getElementById('reciboModal');
+            if (event.target == modal) {
+                fecharModal();
+            }
         }
 
     </script>
 </body>
 </html>
-
-
